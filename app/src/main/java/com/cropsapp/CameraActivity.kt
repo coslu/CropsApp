@@ -4,32 +4,27 @@ import android.Manifest
 import android.content.ContentValues
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.BitmapFactory
-import android.net.Uri
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.os.Debug
-import android.os.Environment
 import android.provider.MediaStore
-import android.util.Log
 import android.view.View
 import android.view.WindowInsets
 import android.view.WindowInsetsController
+import android.view.animation.AnimationUtils
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.Toast
-import androidx.camera.core.*
-import androidx.camera.core.CameraSelector.LENS_FACING_BACK
-import androidx.camera.core.ImageCapture.CAPTURE_MODE_MAXIMIZE_QUALITY
+import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageCapture
+import androidx.camera.core.ImageCaptureException
+import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.view.WindowInsetsControllerCompat
-import java.io.File
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Locale
 
 class CameraActivity : AppCompatActivity() {
     companion object {
@@ -42,7 +37,7 @@ class CameraActivity : AppCompatActivity() {
     }
 
     private val imageCapture =
-        ImageCapture.Builder().setCaptureMode(CAPTURE_MODE_MAXIMIZE_QUALITY).build()
+        ImageCapture.Builder().setCaptureMode(ImageCapture.CAPTURE_MODE_MAXIMIZE_QUALITY).build()
     private lateinit var imageView: ImageView
     private lateinit var previewView: PreviewView
 
@@ -61,8 +56,6 @@ class CameraActivity : AppCompatActivity() {
 
         previewView = findViewById(R.id.preview_view)
         imageView = findViewById(R.id.camera_image_view)
-        imageView.visibility = View.GONE
-        previewView.visibility = View.VISIBLE
 
         if (allPermissionsGranted())
             startCamera()
@@ -75,6 +68,12 @@ class CameraActivity : AppCompatActivity() {
 
         val takePictureButton = findViewById<Button>(R.id.button_take_picture)
         takePictureButton.setOnClickListener { takePicture() }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        //remove freeze
+        imageView.visibility = View.GONE
     }
 
     override fun onRequestPermissionsResult(
@@ -103,7 +102,7 @@ class CameraActivity : AppCompatActivity() {
 
             val preview = Preview.Builder().build()
             val cameraSelector =
-                CameraSelector.Builder().requireLensFacing(LENS_FACING_BACK).build()
+                CameraSelector.Builder().requireLensFacing(CameraSelector.LENS_FACING_BACK).build()
             preview.setSurfaceProvider(previewView.surfaceProvider)
 
             cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageCapture)
@@ -111,11 +110,17 @@ class CameraActivity : AppCompatActivity() {
     }
 
     private fun freezePreview() {
+        //play white border animation
+        val animation = AnimationUtils.loadAnimation(this, R.anim.take_picture_border_fade)
+        val borderView = findViewById<View>(R.id.take_picture_border)
+        borderView.alpha = 1.0F
+        borderView.startAnimation(animation)
+
+        //static image to replace previewView
         imageView.apply {
             setImageBitmap(previewView.bitmap)
             visibility = View.VISIBLE
         }
-        previewView.visibility = View.GONE
     }
 
     private fun takePicture() {
@@ -132,9 +137,10 @@ class CameraActivity : AppCompatActivity() {
             }
         }
 
-        imageCapture.takePicture(ImageCapture.OutputFileOptions.Builder(
-            contentResolver, MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues
-        ).build(),
+        imageCapture.takePicture(
+            ImageCapture.OutputFileOptions.Builder(
+                contentResolver, MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues
+            ).build(),
             ContextCompat.getMainExecutor(this),
             object : ImageCapture.OnImageSavedCallback {
                 override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {

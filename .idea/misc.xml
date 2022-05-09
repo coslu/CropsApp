@@ -3,6 +3,7 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Users/Baro/Documents/Projects/AndroidStudio/CropsApp/app/src/main/res/drawable/take_picture_border.xml" value="0.158" />
         <entry key="..\:/Users/Baro/Documents/Projects/AndroidStudio/CropsApp/app/src/main/res/layout-land/activity_camera.xml" value="0.21516754850088182" />
         <entry key="..\:/Users/Baro/Documents/Projects/AndroidStudio/CropsApp/app/src/main/res/layout/activity_camera.xml" value="0.22826086956521738" />
         <entry key="..\:/Users/Baro/Documents/Projects/AndroidStudio/CropsApp/app/src/main/res/layout/activity_preview.xml" value="0.1" />
