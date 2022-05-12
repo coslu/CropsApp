@@ -7,7 +7,9 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Environment
 import android.provider.MediaStore
+import android.util.Log
 import android.view.View
 import android.view.WindowInsets
 import android.view.WindowInsetsController
@@ -23,6 +25,8 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -66,7 +70,7 @@ class CameraActivity : AppCompatActivity() {
             )
         }
 
-        val takePictureButton = findViewById<Button>(R.id.button_take_picture)
+        val takePictureButton = findViewById<FloatingActionButton>(R.id.button_take_picture)
         takePictureButton.setOnClickListener { takePicture() }
     }
 
@@ -128,19 +132,11 @@ class CameraActivity : AppCompatActivity() {
 
         //data of the saved image
         val name = SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-SSS", Locale.GERMANY)
-            .format(System.currentTimeMillis())
-        val contentValues = ContentValues().apply {
-            put(MediaStore.MediaColumns.DISPLAY_NAME, name)
-            put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                put(MediaStore.MediaColumns.RELATIVE_PATH, "Pictures/CropsApp")
-            }
-        }
+            .format(System.currentTimeMillis()) + ".jpg"
 
+        val file = File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), name)
         imageCapture.takePicture(
-            ImageCapture.OutputFileOptions.Builder(
-                contentResolver, MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues
-            ).build(),
+            ImageCapture.OutputFileOptions.Builder(file).build(),
             ContextCompat.getMainExecutor(this),
             object : ImageCapture.OnImageSavedCallback {
                 override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {

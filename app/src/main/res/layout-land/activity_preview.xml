@@ -8,24 +8,25 @@
 
     <ImageView
         android:id="@+id/preview_image_view"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/preview_buttons_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/preview_buttons_layout"
         android:contentDescription="@string/content_description_preview"/>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/preview_buttons_layout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        app:layout_constraintEnd_toEndOf="parent"
         android:padding="20dp"
         app:layout_constraintBottom_toBottomOf="parent">
         <Button
             android:id="@+id/button_discard"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/button_save"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/button_save"
             style="@style/OutlinedButtonStyle"
             android:text="@string/button_discard"
             tools:ignore="MissingConstraints" />
@@ -33,8 +34,8 @@
             android:id="@+id/button_save"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@id/button_discard"
+            app:layout_constraintTop_toBottomOf="@id/button_discard"
+            app:layout_constraintBottom_toBottomOf="parent"
             style="@style/FilledButtonStyle"
             android:text="@string/button_save"
             tools:ignore="MissingConstraints" />
