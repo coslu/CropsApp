@@ -8,8 +8,14 @@
     <!-- Button Text -->
     <string name="button_save">Save</string>
     <string name="button_discard">Discard</string>
+    <string name="button_grant_permission">Grant Permission</string>
+    <string name="button_back">Back</string>
 
     <!-- Image Content Descriptions-->
     <string name="content_description_preview">Preview of the taken picture</string>
     <string name="content_description_main_fab">Take a picture</string>
+
+    <!-- Info Text -->
+    <string name="text_camera_permission">To use this feature you need to grant the application the
+        permission to use your camera.</string>
 </resources>

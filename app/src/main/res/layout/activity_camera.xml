@@ -13,6 +13,7 @@
         android:id="@+id/camera_image_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:visibility="gone"
         tools:ignore="ContentDescription" />
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/button_take_picture"

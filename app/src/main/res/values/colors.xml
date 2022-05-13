@@ -9,6 +9,9 @@
     <color name="white">#FFFFFFFF</color>
 
     <color name="green">#8fcd4f</color>
+    <color name="green_alt">#2e7d32</color>
+    <color name="green_alt_dark">#1b5e1f</color>
     <color name="green_dark">#5d9c1c</color>
     <color name="yellow">#fdd835</color>
+    <color name="dark_text">#272727</color>
 </resources>

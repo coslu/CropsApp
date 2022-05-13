@@ -29,15 +29,17 @@
             style="@style/OutlinedButtonStyle"
             android:text="@string/button_discard"
             tools:ignore="MissingConstraints" />
+
         <Button
             android:id="@+id/button_save"
+            style="@style/FilledButtonStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:text="@string/button_save"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/button_discard"
-            style="@style/FilledButtonStyle"
-            android:text="@string/button_save"
-            tools:ignore="MissingConstraints" />
+            tools:ignore="MissingConstraints,TextContrastCheck"
+            tools:layout_editor_absoluteY="20dp" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

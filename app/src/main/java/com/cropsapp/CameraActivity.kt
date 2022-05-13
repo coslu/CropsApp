@@ -4,11 +4,13 @@ import android.Manifest
 import android.content.ContentValues
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
+import android.provider.Settings
 import android.util.Log
 import android.view.View
 import android.view.WindowInsets
@@ -44,20 +46,11 @@ class CameraActivity : AppCompatActivity() {
         ImageCapture.Builder().setCaptureMode(ImageCapture.CAPTURE_MODE_MAXIMIZE_QUALITY).build()
     private lateinit var imageView: ImageView
     private lateinit var previewView: PreviewView
+    private var permissionsDenied = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_camera)
-
-        //go fullscreen
-        supportActionBar?.hide()
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            val windowInsetsController = window.insetsController
-            windowInsetsController?.systemBarsBehavior =
-                WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-            windowInsetsController?.hide(WindowInsets.Type.statusBars())
-        }
-
         previewView = findViewById(R.id.preview_view)
         imageView = findViewById(R.id.camera_image_view)
 
@@ -69,13 +62,20 @@ class CameraActivity : AppCompatActivity() {
                 REQUEST_CODE_PERMISSIONS
             )
         }
-
-        val takePictureButton = findViewById<FloatingActionButton>(R.id.button_take_picture)
-        takePictureButton.setOnClickListener { takePicture() }
     }
 
     override fun onResume() {
         super.onResume()
+
+        /* if we had denied permissions but they are granted now, stop showing the warning
+        and start the camera */
+        if (permissionsDenied && allPermissionsGranted()) {
+            permissionsDenied = false
+            setContentView(R.layout.activity_camera)
+            previewView = findViewById(R.id.preview_view)
+            imageView = findViewById(R.id.camera_image_view)
+            startCamera()
+        }
         //remove freeze
         imageView.visibility = View.GONE
     }
@@ -89,7 +89,19 @@ class CameraActivity : AppCompatActivity() {
         if (requestCode == REQUEST_CODE_PERMISSIONS && allPermissionsGranted()) {
             startCamera()
         } else {
-            onBackPressed() //TODO
+            permissionsDenied = true
+            //alternative warning layout to ask for permissions
+            setContentView(R.layout.activity_camera_alt)
+            findViewById<Button>(R.id.button_permission_back).setOnClickListener {
+                onBackPressed()
+            }
+            findViewById<Button>(R.id.button_grant_permission).setOnClickListener {
+                val intent = Intent(
+                    Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                    Uri.parse("package:com.cropsapp")
+                )
+                startActivity(intent)
+            }
         }
     }
 
@@ -100,6 +112,16 @@ class CameraActivity : AppCompatActivity() {
     }
 
     private fun startCamera() {
+        //go fullscreen
+        supportActionBar?.hide()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            val windowInsetsController = window.insetsController
+            windowInsetsController?.systemBarsBehavior =
+                WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            windowInsetsController?.hide(WindowInsets.Type.statusBars())
+        }
+
+        //bind camera to lifecycle
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
         cameraProviderFuture.addListener({
             val cameraProvider = cameraProviderFuture.get()
@@ -111,6 +133,9 @@ class CameraActivity : AppCompatActivity() {
 
             cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageCapture)
         }, ContextCompat.getMainExecutor(this))
+
+        val takePictureButton = findViewById<FloatingActionButton>(R.id.button_take_picture)
+        takePictureButton.setOnClickListener { takePicture() }
     }
 
     private fun freezePreview() {
@@ -147,8 +172,8 @@ class CameraActivity : AppCompatActivity() {
                 }
 
                 override fun onError(exception: ImageCaptureException) {
-                    //TODO
-                    Toast.makeText(applicationContext, "Error", Toast.LENGTH_SHORT).show()
+                    //what TODO here?
+                    Toast.makeText(applicationContext, exception.message, Toast.LENGTH_LONG).show()
                 }
             })
     }

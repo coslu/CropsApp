@@ -2,8 +2,8 @@
     <!-- Base application theme. -->
     <style name="Theme.CropsApp" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
         <!-- Primary brand color. -->
-        <item name="colorPrimary">@color/green</item>
-        <item name="colorPrimaryVariant">@color/green_dark</item>
+        <item name="colorPrimary">#43a046</item>
+        <item name="colorPrimaryVariant">#007019</item>
         <item name="colorOnPrimary">@color/black</item>
         <!-- Secondary brand color. -->
         <item name="colorSecondary">@color/yellow</item>
@@ -31,12 +31,19 @@
         <item name="backgroundTint">@color/white</item>
     </style>
 
+    <style name="ButtonTheme">
+        <item name="colorPrimary">@color/green_alt</item>
+        <item name="colorSecondary">@color/green_alt</item>
+    </style>
+
     <style name="FilledButtonStyle" parent="Widget.Material3.Button">
         <item name="android:textSize">14sp</item>
+
     </style>
 
     <style name="OutlinedButtonStyle" parent="Widget.Material3.Button.OutlinedButton">
-       <item name="strokeColor">@color/green_dark</item>
+        <item name="strokeColor">@color/green_alt</item>
+        <item name="android:textColor">@color/green_alt</item>
         <item name="android:textSize">14sp</item>
     </style>
 
