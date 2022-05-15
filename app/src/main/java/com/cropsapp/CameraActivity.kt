@@ -9,17 +9,13 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Environment
 import android.provider.Settings
-import android.view.View
-import android.view.WindowInsets
-import android.view.WindowInsetsController
+import android.util.Log
+import android.view.*
 import android.view.animation.AnimationUtils
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.Toast
-import androidx.camera.core.CameraSelector
-import androidx.camera.core.ImageCapture
-import androidx.camera.core.ImageCaptureException
-import androidx.camera.core.Preview
+import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.app.ActivityCompat
@@ -43,6 +39,7 @@ class CameraActivity : AppCompatActivity() {
         ImageCapture.Builder().setCaptureMode(ImageCapture.CAPTURE_MODE_MAXIMIZE_QUALITY).build()
     private lateinit var imageView: ImageView
     private lateinit var previewView: PreviewView
+    private lateinit var listener: OrientationEventListener
     private var permissionsDenied = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -50,6 +47,20 @@ class CameraActivity : AppCompatActivity() {
         setContentView(R.layout.activity_camera)
         previewView = findViewById(R.id.preview_view)
         imageView = findViewById(R.id.camera_image_view)
+
+        /* OrientationEventListener to determine target image rotation of imageCapture.
+        Is enabled onStart, disabled onStop */
+        listener = object : OrientationEventListener(this) {
+            override fun onOrientationChanged(orientation: Int) {
+                imageCapture.targetRotation = when (orientation) {
+                    in 225..315 -> Surface.ROTATION_90
+                    in 135..225 -> Surface.ROTATION_180
+                    in 45..135 -> Surface.ROTATION_270
+                    else -> Surface.ROTATION_0
+                }
+                Log.d("HEY", "orientationSet")
+            }
+        }
 
         if (allPermissionsGranted())
             startCamera()
@@ -61,8 +72,10 @@ class CameraActivity : AppCompatActivity() {
         }
     }
 
-    override fun onResume() {
-        super.onResume()
+    override fun onStart() {
+        super.onStart()
+
+        listener.enable()
 
         /* if we had denied permissions but they are granted now, stop showing the warning
         and start the camera */
@@ -75,6 +88,11 @@ class CameraActivity : AppCompatActivity() {
         }
         //remove freeze
         imageView.visibility = View.GONE
+    }
+
+    override fun onStop() {
+        super.onStop()
+        listener.disable()
     }
 
     override fun onRequestPermissionsResult(
