@@ -3,7 +3,14 @@ package com.cropsapp
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.cropsapp.databinding.ActivityMainBinding
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import java.io.BufferedInputStream
+import java.net.HttpURLConnection
+import java.net.URL
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
@@ -19,6 +26,22 @@ class MainActivity : AppCompatActivity() {
         binding.fab.setOnClickListener { view ->
             val intent = Intent(view.context, CameraActivity::class.java)
             startActivity(intent)
+        }
+
+        binding.buttonDebug.setOnClickListener {
+            lifecycleScope.launch(Dispatchers.IO, CoroutineStart.DEFAULT) {
+                val url = URL("http://192.168.0.4:5000/hello")
+                val urlConnection = url.openConnection() as HttpURLConnection
+                try {
+                    val inputStream = BufferedInputStream(urlConnection.inputStream)
+                    val array = ByteArray(128)
+                    println(array.toString())
+                    println(inputStream.read(array))
+                    println(array.toString())
+                } finally {
+                    urlConnection.disconnect()
+                }
+            }
         }
     }
 }

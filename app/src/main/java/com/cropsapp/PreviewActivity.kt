@@ -7,8 +7,15 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Button
 import android.widget.ImageView
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import java.io.BufferedInputStream
 import java.io.File
+import java.net.HttpURLConnection
 import java.net.URI
+import java.net.URL
 
 class PreviewActivity : AppCompatActivity() {
     private lateinit var uri: Uri

@@ -58,7 +58,6 @@ class CameraActivity : AppCompatActivity() {
                     in 45..135 -> Surface.ROTATION_270
                     else -> Surface.ROTATION_0
                 }
-                Log.d("HEY", "orientationSet")
             }
         }
 
