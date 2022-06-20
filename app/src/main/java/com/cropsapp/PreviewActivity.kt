@@ -12,6 +12,7 @@ import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.BufferedInputStream
+import java.io.DataOutputStream
 import java.io.File
 import java.net.HttpURLConnection
 import java.net.URI
@@ -19,6 +20,7 @@ import java.net.URL
 
 class PreviewActivity : AppCompatActivity() {
     private lateinit var uri: Uri
+    private lateinit var file: File
     private var saved = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -26,6 +28,7 @@ class PreviewActivity : AppCompatActivity() {
         supportActionBar?.title = getString(R.string.title_preview)
         //set image from the saved file uri
         uri = Uri.parse(intent.getStringExtra("uri"))
+        file = File(URI(uri.toString()))
 
         setLayout()
     }
@@ -41,7 +44,7 @@ class PreviewActivity : AppCompatActivity() {
         super.onDestroy()
         //only keep the file if the save button is clicked, otherwise delete it
         if (!saved)
-            File(URI(uri.toString())).delete()
+            file.delete()
     }
 
     private fun setLayout() {
@@ -56,6 +59,27 @@ class PreviewActivity : AppCompatActivity() {
             finish()
         }
         saveButton.setOnClickListener {
+            lifecycleScope.launch(Dispatchers.IO, CoroutineStart.DEFAULT) {
+                val url = URL("http://192.168.0.4:5000/image")
+                val urlConnection = (url.openConnection() as HttpURLConnection).apply {
+                    doOutput = true
+                    addRequestProperty("Content-Type", "multipart/form-data;boundary=*****")
+                }
+                try {
+                    DataOutputStream(urlConnection.outputStream).apply {
+                        writeBytes("--*****\r\nContent-Disposition: form-data; " +
+                                "name=\"test\";filename=\"${file.name}\"\r\n\r\n")
+                        write(file.readBytes())
+                        writeBytes("\r\n--*****--\r\n")
+                        close()
+                    }
+                    val inputStream = BufferedInputStream(urlConnection.inputStream)
+                    val array = inputStream.readBytes()
+                    println(String(array))
+                } finally {
+                    urlConnection.disconnect()
+                }
+            }
             saved = true
             startActivity(intent)
         }
