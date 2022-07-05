@@ -1,11 +1,14 @@
 package com.cropsapp
 
+import android.Manifest
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.os.FileUtils
 import android.os.Looper
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.lifecycle.lifecycleScope
 import com.cropsapp.databinding.ActivityMainBinding
 import kotlinx.coroutines.CoroutineStart
@@ -34,18 +37,32 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
+        ActivityCompat.requestPermissions(this,
+            arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE), 0)
+
+        val uri = Uri.parse("file:///storage/emulated/0/Download/test_images.jpg")
+        val file = File(URI(uri.toString()))
+
         binding.buttonDebug.setOnClickListener {
             lifecycleScope.launch(Dispatchers.IO, CoroutineStart.DEFAULT) {
-                val url = URL("http://192.168.0.4:5000/add")
-                val urlConnection = url.openConnection() as HttpURLConnection
-                urlConnection.doOutput = true
+                val url = URL("http://192.168.0.4:5000/predict")
+                val urlConnection = (url.openConnection() as HttpURLConnection).apply {
+                    doOutput = true
+                    addRequestProperty("Content-Type", "multipart/form-data;boundary=*****")
+                }
                 try {
-                    urlConnection.outputStream.write("data=3;4".toByteArray())
-//                    val inputStream = BufferedInputStream(urlConnection.inputStream)
-                    val array = urlConnection.inputStream.readBytes()
+                    DataOutputStream(urlConnection.outputStream).apply {
+                        writeBytes(
+                            "--*****\r\nContent-Disposition: form-data; " +
+                                    "name=\"image\";filename=\"image.jpg\"\r\n\r\n"
+                        )
+                        write(file.readBytes())
+                        writeBytes("\r\n--*****--\r\n")
+                        close()
+                    }
+                    val inputStream = BufferedInputStream(urlConnection.inputStream)
+                    val array = inputStream.readBytes()
                     println(String(array))
-                } catch (e:Exception) {
-                    e.printStackTrace()
                 } finally {
                     urlConnection.disconnect()
                 }
