@@ -59,28 +59,8 @@ class PreviewActivity : AppCompatActivity() {
             finish()
         }
         saveButton.setOnClickListener {
-            lifecycleScope.launch(Dispatchers.IO, CoroutineStart.DEFAULT) {
-                val url = URL("http://192.168.0.4:5000/image")
-                val urlConnection = (url.openConnection() as HttpURLConnection).apply {
-                    doOutput = true
-                    addRequestProperty("Content-Type", "multipart/form-data;boundary=*****")
-                }
-                try {
-                    DataOutputStream(urlConnection.outputStream).apply {
-                        writeBytes("--*****\r\nContent-Disposition: form-data; " +
-                                "name=\"test\";filename=\"${file.name}\"\r\n\r\n")
-                        write(file.readBytes())
-                        writeBytes("\r\n--*****--\r\n")
-                        close()
-                    }
-                    val inputStream = BufferedInputStream(urlConnection.inputStream)
-                    val array = inputStream.readBytes()
-                    println(String(array))
-                } finally {
-                    urlConnection.disconnect()
-                }
-            }
             saved = true
+            intent.putExtra("newFile", uri.toString())
             startActivity(intent)
         }
     }

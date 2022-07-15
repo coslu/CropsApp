@@ -9,7 +9,6 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Environment
 import android.provider.Settings
-import android.util.Log
 import android.view.*
 import android.view.animation.AnimationUtils
 import android.widget.Button
@@ -22,8 +21,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import java.io.File
-import java.text.SimpleDateFormat
-import java.util.Locale
+import java.util.*
 
 class CameraActivity : AppCompatActivity() {
     companion object {
@@ -170,8 +168,7 @@ class CameraActivity : AppCompatActivity() {
         freezePreview()
 
         //data of the saved image
-        val name = SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-SSS", Locale.GERMANY)
-            .format(System.currentTimeMillis()) + ".jpg"
+        val name = UUID.randomUUID().toString() + ".jpg"
 
         val file = File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), name)
         imageCapture.takePicture(
