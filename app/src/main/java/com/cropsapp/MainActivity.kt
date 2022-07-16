@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
 import android.os.FileUtils
 import android.os.Looper
 import android.util.Log
@@ -44,6 +45,10 @@ class MainActivity : AppCompatActivity() {
             val intent = Intent(view.context, CameraActivity::class.java)
             startActivity(intent)
         }
+
+        val files = File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), "").listFiles()
+            ?: emptyArray()
+        binding.recyclerView.adapter = MainAdapter(files)
 
         ActivityCompat.requestPermissions(this,
             arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE), 0) //TODO remove

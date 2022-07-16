@@ -20,12 +20,12 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
-    <Button
-        android:id="@+id/buttonDebug"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler_view"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="100dp"
-        android:text="Debug" />
+        android:layout_height="match_parent"
+        android:paddingTop="?actionBarSize"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab"
