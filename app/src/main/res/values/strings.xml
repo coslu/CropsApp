@@ -14,8 +14,19 @@
     <!-- Image Content Descriptions-->
     <string name="content_description_preview">Preview of the taken picture</string>
     <string name="content_description_main_fab">Take a picture</string>
+    <string name="content_description_list_item">Image</string>
 
     <!-- Info Text -->
     <string name="text_camera_permission">To use this feature you need to grant the application the
         permission to use your camera.</string>
+
+    <!-- List Item -->
+    <string name="list_item_status">Status: %1$s</string>
+    <string name="list_item_complete">Complete</string>
+    <string name="list_item_error">Error</string>
+    <string name="list_item_awaiting">Awaiting Response</string>
+    <string name="list_item_prediction_empty"> - </string>
+    <string name="list_item_prediction">%1$.1f%%</string>
+
+    <string name="toast_error">Error</string>
 </resources>

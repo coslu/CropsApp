@@ -8,6 +8,7 @@
         android:id="@+id/image_view_list_main"
         android:layout_width="100dp"
         android:layout_height="100dp"
+        android:contentDescription="@string/content_description_list_item"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
@@ -18,7 +19,6 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toEndOf="@id/image_view_list_main"
         app:layout_constraintBottom_toTopOf="@id/text_status_list_main"
-        android:text="16.07.2022 15:42"
         android:layout_marginStart="20dp"
         style="@style/TextAppearance.Material3.BodyLarge" />
 
@@ -29,7 +29,6 @@
         app:layout_constraintTop_toBottomOf="@id/text_date_list_main"
         app:layout_constraintStart_toEndOf="@id/image_view_list_main"
         app:layout_constraintBottom_toBottomOf="parent"
-        android:text="Status: Complete"
         android:layout_marginStart="20dp"
         style="@style/TextAppearance.Material3.BodyMedium" />
 
@@ -40,7 +39,7 @@
         app:layout_constraintTop_toBottomOf="@id/text_prediction_list_main"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
-        android:text="36.2%"
+        android:text="@string/list_item_prediction_empty"
         android:layout_marginEnd="20dp"
         style="@style/TextAppearance.Material3.BodyLarge"
         android:textStyle="bold"/>

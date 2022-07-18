@@ -1,22 +1,29 @@
 package com.cropsapp
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Intent
+import android.content.res.Configuration
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
 import android.os.FileUtils
 import android.os.Looper
 import android.util.Log
+import android.view.OrientationEventListener
+import android.view.Surface
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.net.toUri
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.cropsapp.databinding.ActivityMainBinding
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeout
 import java.io.BufferedInputStream
 import java.io.DataOutputStream
 import java.io.File
@@ -24,14 +31,17 @@ import java.lang.IllegalArgumentException
 import java.net.HttpURLConnection
 import java.net.URI
 import java.net.URL
+import kotlin.math.max
 
 class MainActivity : AppCompatActivity() {
     companion object {
         private const val SERVER_URL = "https://sugarbeet-gbtudlapea-ew.a.run.app"
-        private const val LOCAL_URL = "http://192.168.0.4:5000"
+        private const val LOCAL_URL = "http://192.168.0.4:5000" //TODO remove
+        private const val CONNECTION_TIMEOUT = 30000
     }
 
     private lateinit var binding: ActivityMainBinding
+    private lateinit var adapter: MainAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,47 +56,56 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        val files = File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), "").listFiles()
-            ?: emptyArray()
-        binding.recyclerView.adapter = MainAdapter(files)
+        adapter = MainAdapter(this)
+        binding.recyclerView.adapter = adapter
+        binding.recyclerView.addItemDecoration(
+            DividerItemDecoration(
+                this,
+                LinearLayoutManager.VERTICAL
+            )
+        )
 
-        ActivityCompat.requestPermissions(this,
-            arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE), 0) //TODO remove
+        lifecycleScope.launch(Dispatchers.IO, CoroutineStart.DEFAULT) {
+            Looper.prepare()
+        }
+
+        ActivityCompat.requestPermissions(
+            this,
+            arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE), 0
+        ) //TODO remove
     }
 
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
 
         //if activity is launched from PreviewActivity by clicking the 'Save' button
+        adapter.updateFiles()
+        adapter.notifyItemInserted(0)
+        binding.recyclerView.smoothScrollToPosition(0)
         intent?.getStringExtra("newFile")?.let { addFile(it) }
-    }
-
-    private fun printResult(str: String) {
-        Toast.makeText(this, str, Toast.LENGTH_LONG).show()
     }
 
     /**
      * Adds the newly taken picture to the list, sends the image to the server and updates the list
      * with the received result.
      */
+    @SuppressLint("NotifyDataSetChanged")
     private fun addFile(uriString: String) {
-        /*val uri = Uri.parse("file:///storage/emulated/0/Download/test_images.jpg")
-        val file2 = File(URI(uri.toString()))*/
-
         val file = File(URI(uriString))
+        val textFile = File(filesDir, "${file.nameWithoutExtension}.txt")
 
         lifecycleScope.launch(Dispatchers.IO, CoroutineStart.DEFAULT) {
-            Looper.prepare()
             val url = URL("$LOCAL_URL/predict")
             val urlConnection = (url.openConnection() as HttpURLConnection).apply {
                 doOutput = true
                 addRequestProperty("Content-Type", "multipart/form-data;boundary=*****")
+                connectTimeout = CONNECTION_TIMEOUT
             }
             try {
                 DataOutputStream(urlConnection.outputStream).apply {
                     writeBytes(
                         "--*****\r\nContent-Disposition: form-data; " +
-                                "name=\"image\";filename=${file.name}\r\n\r\n"
+                                "name=image;filename=${file.name}\r\n\r\n"
                     )
                     write(file.readBytes())
                     writeBytes("\r\n--*****--\r\n")
@@ -95,13 +114,18 @@ class MainActivity : AppCompatActivity() {
                 val inputStream = BufferedInputStream(urlConnection.inputStream)
                 val list = String(inputStream.readBytes()).removeSuffix("\n")
                     .removeSurrounding("\"").split('#')
-                if (list[0] == file.name)
-                    printResult("%.2f".format(list[1].toDouble()))
-                else throw Exception()
+                val result = list[1].toDouble().coerceIn(0.0..100.0)
+                textFile.writeText(result.toString())
             } catch (e: Exception) {
-                e.printStackTrace()
-                printResult("Error")
+                textFile.writeText("-2")
             } finally {
+                runOnUiThread {
+                    /*
+                    we need to notifyDataSetChanged because there may be multiple of those running
+                    and there is no reliable way to know the position of the data that changed
+                     */
+                    binding.recyclerView.adapter?.notifyDataSetChanged()
+                }
                 urlConnection.disconnect()
             }
         }

@@ -5,8 +5,12 @@ import android.content.res.Configuration
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Environment
+import android.util.Log
 import android.widget.Button
 import android.widget.ImageView
+import android.widget.Toast
+import androidx.core.net.toFile
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
@@ -61,6 +65,18 @@ class PreviewActivity : AppCompatActivity() {
         saveButton.setOnClickListener {
             saved = true
             intent.putExtra("newFile", uri.toString())
+            try {
+                val file = File(filesDir, "${file.nameWithoutExtension}.txt")
+                file.writeText("-1")
+                /*openFileOutput("${file.nameWithoutExtension}.txt", MODE_PRIVATE).apply {
+                    write("-1".toByteArray())
+                    close()
+                }*/
+            }
+            catch (e: Exception) {
+                Toast.makeText(this, R.string.toast_error, Toast.LENGTH_LONG).show()
+            }
+
             startActivity(intent)
         }
     }
