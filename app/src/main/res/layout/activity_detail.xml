@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".DetailActivity">
+    <ImageView
+        android:id="@+id/image_view_detail"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/content_description_list_item"
+        app:layout_constraintVertical_weight="1"
+        app:layout_constraintBottom_toTopOf="@id/text_date_detail"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/text_date_detail"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="20.07.2022 17:07"
+        android:textAlignment="center"
+        app:layout_constraintBottom_toTopOf="@id/linear_layout_detail"
+        android:layout_marginBottom="10dp"
+        style="@style/TextAppearance.Material3.BodyLarge"/>
+
+    <LinearLayout
+        android:id="@+id/linear_layout_detail"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:layout_marginBottom="10dp"
+        app:layout_constraintBottom_toBottomOf="parent">
+        <ImageView
+            android:id="@+id/image_status_detail"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/content_description_status_icon"
+            android:layout_marginEnd="10dp"
+            android:src="@drawable/ic_baseline_error_outline_24" />
+        <TextView
+            android:id="@+id/text_prediction_detail"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Error"
+            android:textAlignment="center"
+            android:textStyle="bold"
+            android:textSize="20sp"
+            style="@style/TextAppearance.Material3.DisplaySmall" />
+        <Button
+            android:id="@+id/button_retry_detail"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Retry"
+            android:textSize="20sp"
+            android:layout_marginStart="10dp"
+            app:icon="@drawable/ic_baseline_refresh_24"
+            style="@style/Widget.Material3.Button.TextButton.Icon" />
+    </LinearLayout>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

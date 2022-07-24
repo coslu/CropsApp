@@ -67,7 +67,7 @@ class PreviewActivity : AppCompatActivity() {
             intent.putExtra("newFile", uri.toString())
             try {
                 val file = File(filesDir, "${file.nameWithoutExtension}.txt")
-                file.writeText("-1")
+                file.writeText(MainAdapter.STATUS_AWAITING.toString())
                 /*openFileOutput("${file.nameWithoutExtension}.txt", MODE_PRIVATE).apply {
                     write("-1".toByteArray())
                     close()

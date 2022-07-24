@@ -10,6 +10,7 @@ import android.os.Environment
 import android.os.FileUtils
 import android.os.Looper
 import android.util.Log
+import android.view.MotionEvent
 import android.view.OrientationEventListener
 import android.view.Surface
 import android.widget.Toast
@@ -19,6 +20,7 @@ import androidx.core.net.toUri
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.cropsapp.databinding.ActivityMainBinding
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
@@ -41,7 +43,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private lateinit var binding: ActivityMainBinding
-    private lateinit var adapter: MainAdapter
+    private lateinit var mainAdapter: MainAdapter
+    private val newFiles = mutableListOf<File>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -56,14 +59,12 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        adapter = MainAdapter(this)
-        binding.recyclerView.adapter = adapter
-        binding.recyclerView.addItemDecoration(
-            DividerItemDecoration(
-                this,
-                LinearLayoutManager.VERTICAL
-            )
-        )
+        mainAdapter = MainAdapter(this)
+        binding.recyclerView.apply {
+            adapter = mainAdapter
+            addItemDecoration(DividerItemDecoration(context, LinearLayoutManager.VERTICAL))
+        }
+
 
         lifecycleScope.launch(Dispatchers.IO, CoroutineStart.DEFAULT) {
             Looper.prepare()
@@ -79,10 +80,17 @@ class MainActivity : AppCompatActivity() {
         super.onNewIntent(intent)
 
         //if activity is launched from PreviewActivity by clicking the 'Save' button
-        adapter.updateFiles()
-        adapter.notifyItemInserted(0)
+        mainAdapter.updateFiles()
         binding.recyclerView.smoothScrollToPosition(0)
         intent?.getStringExtra("newFile")?.let { addFile(it) }
+    }
+
+    override fun onDestroy() {
+        for (file in newFiles) {
+            file.writeText(MainAdapter.STATUS_ERROR.toString())
+        }
+
+        super.onDestroy()
     }
 
     /**
@@ -93,6 +101,7 @@ class MainActivity : AppCompatActivity() {
     private fun addFile(uriString: String) {
         val file = File(URI(uriString))
         val textFile = File(filesDir, "${file.nameWithoutExtension}.txt")
+        newFiles.add(textFile)
 
         lifecycleScope.launch(Dispatchers.IO, CoroutineStart.DEFAULT) {
             val url = URL("$LOCAL_URL/predict")
@@ -117,7 +126,7 @@ class MainActivity : AppCompatActivity() {
                 val result = list[1].toDouble().coerceIn(0.0..100.0)
                 textFile.writeText(result.toString())
             } catch (e: Exception) {
-                textFile.writeText("-2")
+                textFile.writeText(MainAdapter.STATUS_ERROR.toString())
             } finally {
                 runOnUiThread {
                     /*
@@ -126,6 +135,7 @@ class MainActivity : AppCompatActivity() {
                      */
                     binding.recyclerView.adapter?.notifyDataSetChanged()
                 }
+                newFiles.remove(textFile)
                 urlConnection.disconnect()
             }
         }

@@ -2,6 +2,10 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:focusable="true"
+    android:clickable="true"
+    android:background="?android:attr/selectableItemBackground"
+    android:id="@+id/constrint_layout_list_item"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <ImageView
@@ -22,15 +26,36 @@
         android:layout_marginStart="20dp"
         style="@style/TextAppearance.Material3.BodyLarge" />
 
+   <!-- <TextView
+        android:id="@+id/text_status_static_list_main"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/list_item_status"
+        app:layout_constraintTop_toBottomOf="@id/text_date_list_main"
+        app:layout_constraintStart_toEndOf="@id/image_view_list_main"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginStart="20dp"
+        style="@style/TextAppearance.Material3.BodyMedium" />-->
+
     <TextView
         android:id="@+id/text_status_list_main"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintTop_toBottomOf="@id/text_date_list_main"
-        app:layout_constraintStart_toEndOf="@id/image_view_list_main"
+        app:layout_constraintStart_toEndOf="@id/image_status_list_main"
         app:layout_constraintBottom_toBottomOf="parent"
-        android:layout_marginStart="20dp"
-        style="@style/TextAppearance.Material3.BodyMedium" />
+        android:layout_marginStart="10dp" />
+
+    <ImageView
+        android:id="@+id/image_status_list_main"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_baseline_access_time_24"
+        android:contentDescription="@string/content_description_status_icon"
+        app:layout_constraintTop_toTopOf="@id/text_status_list_main"
+        app:layout_constraintBottom_toBottomOf="@id/text_status_list_main"
+        app:layout_constraintStart_toStartOf="@id/text_date_list_main" />
+
 
     <TextView
         android:id="@+id/text_prediction_list_main"
