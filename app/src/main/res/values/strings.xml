@@ -10,6 +10,7 @@
     <string name="button_discard">Discard</string>
     <string name="button_grant_permission">Grant Permission</string>
     <string name="button_back">Back</string>
+    <string name="button_retry">Retry</string>
 
     <!-- Image Content Descriptions-->
     <string name="content_description_preview">Preview of the taken picture</string>
