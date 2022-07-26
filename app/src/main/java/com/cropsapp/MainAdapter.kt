@@ -21,14 +21,14 @@ import java.io.File
 import java.text.DateFormat
 import java.util.*
 
-class MainAdapter(private val context: Context) : RecyclerView.Adapter<MainAdapter.ViewHolder>() {
+class MainAdapter(private val picturesDirectory: File?) :
+    RecyclerView.Adapter<MainAdapter.ViewHolder>() {
     companion object {
         const val STATUS_ERROR = -2.0
         const val STATUS_AWAITING = -1.0
     }
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val constaintLayout = view.findViewById<ConstraintLayout>(R.id.constrint_layout_list_item)
         val imageView = view.findViewById<ImageView>(R.id.image_view_list_main)
         val textDate = view.findViewById<TextView>(R.id.text_date_list_main)
         val textStatus = view.findViewById<TextView>(R.id.text_status_list_main)
@@ -37,7 +37,7 @@ class MainAdapter(private val context: Context) : RecyclerView.Adapter<MainAdapt
     }
 
     private var files =
-        File(context.getExternalFilesDir(Environment.DIRECTORY_PICTURES), "").listFiles()
+        File(picturesDirectory, "").listFiles()
             ?: emptyArray()
 
     init {
@@ -46,7 +46,7 @@ class MainAdapter(private val context: Context) : RecyclerView.Adapter<MainAdapt
 
     fun updateFiles() {
         files =
-            File(context.getExternalFilesDir(Environment.DIRECTORY_PICTURES), "").listFiles()
+            File(picturesDirectory, "").listFiles()
                 ?: emptyArray()
         files.sortByDescending { it.lastModified() }
         notifyItemInserted(0)
@@ -64,13 +64,12 @@ class MainAdapter(private val context: Context) : RecyclerView.Adapter<MainAdapt
         holder.textDate.text = DateFormat
             .getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.GERMANY)
             .format(Date(files[position].lastModified()))
-        holder.textPrediction.text = context.getString(R.string.list_item_prediction_empty)
-        var result = -2.0
+        holder.textPrediction.text = holder.textPrediction.context
+            .getString(R.string.list_item_prediction_empty)
         with(holder.textStatus.context) {
-            val name = "${files[position].nameWithoutExtension}.txt"
+            val textFile = files[position].getTextFile(this)
             try {
-                val textFile = File(filesDir, name)
-                result = textFile.readText().toDouble()
+                val result = textFile.readText().toDouble()
                 if (result in 0.0..100.0)
                     holder.textPrediction.text = getString(R.string.list_item_prediction, result)
                 holder.textStatus.text =
@@ -97,15 +96,14 @@ class MainAdapter(private val context: Context) : RecyclerView.Adapter<MainAdapt
                 )
             } catch (e: Exception) {
                 e.printStackTrace()
-                holder.textStatus.text =
-                    getString(R.string.list_item_error)
+                textFile.writeText(STATUS_ERROR.toString())
+                holder.textStatus.text = getString(R.string.list_item_error)
             }
         }
 
         holder.itemView.setOnClickListener {
             Intent(it.context, DetailActivity::class.java).apply {
                 putExtra("uri", files[position].toUri())
-                putExtra("result", result)
                 it.context.startActivity(this)
             }
         }

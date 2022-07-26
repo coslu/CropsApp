@@ -5,10 +5,8 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.res.Configuration
 import android.net.Uri
-import android.os.Bundle
-import android.os.Environment
-import android.os.FileUtils
-import android.os.Looper
+import android.os.*
+import android.provider.ContactsContract
 import android.util.Log
 import android.view.MotionEvent
 import android.view.OrientationEventListener
@@ -22,10 +20,7 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.cropsapp.databinding.ActivityMainBinding
-import kotlinx.coroutines.CoroutineStart
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.*
 import java.io.BufferedInputStream
 import java.io.DataOutputStream
 import java.io.File
@@ -33,6 +28,7 @@ import java.lang.IllegalArgumentException
 import java.net.HttpURLConnection
 import java.net.URI
 import java.net.URL
+import java.util.ArrayList
 import kotlin.math.max
 
 class MainActivity : AppCompatActivity() {
@@ -43,11 +39,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     private lateinit var binding: ActivityMainBinding
-    private lateinit var mainAdapter: MainAdapter
-    private val newFiles = mutableListOf<File>()
+    lateinit var mainAdapter: MainAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        NetworkOperations(this)
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -59,84 +56,62 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        mainAdapter = MainAdapter(this)
+        kotlin.runCatching {
+            //If there were "awaiting" files left from last time, set them to "error"
+            File(filesDir, "awaitingFiles").forEachLine {
+                File(filesDir, it).writeText(MainAdapter.STATUS_ERROR.toString())
+            }
+        }
+
+        //If there were discarded images from last time that were not deleted, delete them now
+        deleteFiles()
+
+        mainAdapter = MainAdapter(getExternalFilesDir(Environment.DIRECTORY_PICTURES))
         binding.recyclerView.apply {
             adapter = mainAdapter
             addItemDecoration(DividerItemDecoration(context, LinearLayoutManager.VERTICAL))
         }
-
-
-        lifecycleScope.launch(Dispatchers.IO, CoroutineStart.DEFAULT) {
-            Looper.prepare()
-        }
-
-        ActivityCompat.requestPermissions(
-            this,
-            arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE), 0
-        ) //TODO remove
     }
 
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
 
         //if activity is launched from PreviewActivity by clicking the 'Save' button
+        deleteFiles()
         mainAdapter.updateFiles()
         binding.recyclerView.smoothScrollToPosition(0)
         intent?.getStringExtra("newFile")?.let { addFile(it) }
     }
 
-    override fun onDestroy() {
-        for (file in newFiles) {
-            file.writeText(MainAdapter.STATUS_ERROR.toString())
-        }
+    override fun onResume() {
+        super.onResume()
+        deleteFiles()
+    }
 
-        super.onDestroy()
+    override fun onStop() {
+        NetworkOperations.defaultOperator.saveAwaitingFiles()
+        super.onStop()
+    }
+
+    private fun addFile(uriString: String) {
+        val file = File(URI(uriString))
+        val textFile = file.getTextFile(this)
+
+        CoroutineScope(Dispatchers.IO).launch {
+            NetworkOperations.defaultOperator.send(file, textFile)
+        }
     }
 
     /**
-     * Adds the newly taken picture to the list, sends the image to the server and updates the list
-     * with the received result.
+     * Deletes all images that were discarded from PreviewActivity
      */
-    @SuppressLint("NotifyDataSetChanged")
-    private fun addFile(uriString: String) {
-        val file = File(URI(uriString))
-        val textFile = File(filesDir, "${file.nameWithoutExtension}.txt")
-        newFiles.add(textFile)
-
-        lifecycleScope.launch(Dispatchers.IO, CoroutineStart.DEFAULT) {
-            val url = URL("$LOCAL_URL/predict")
-            val urlConnection = (url.openConnection() as HttpURLConnection).apply {
-                doOutput = true
-                addRequestProperty("Content-Type", "multipart/form-data;boundary=*****")
-                connectTimeout = CONNECTION_TIMEOUT
-            }
-            try {
-                DataOutputStream(urlConnection.outputStream).apply {
-                    writeBytes(
-                        "--*****\r\nContent-Disposition: form-data; " +
-                                "name=image;filename=${file.name}\r\n\r\n"
-                    )
-                    write(file.readBytes())
-                    writeBytes("\r\n--*****--\r\n")
-                    close()
+    private fun deleteFiles() {
+        kotlin.runCatching {
+            File(filesDir, "filesToDelete.txt").apply {
+                forEachLine {
+                    File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), it).delete()
                 }
-                val inputStream = BufferedInputStream(urlConnection.inputStream)
-                val list = String(inputStream.readBytes()).removeSuffix("\n")
-                    .removeSurrounding("\"").split('#')
-                val result = list[1].toDouble().coerceIn(0.0..100.0)
-                textFile.writeText(result.toString())
-            } catch (e: Exception) {
-                textFile.writeText(MainAdapter.STATUS_ERROR.toString())
-            } finally {
-                runOnUiThread {
-                    /*
-                    we need to notifyDataSetChanged because there may be multiple of those running
-                    and there is no reliable way to know the position of the data that changed
-                     */
-                    binding.recyclerView.adapter?.notifyDataSetChanged()
-                }
-                newFiles.remove(textFile)
-                urlConnection.disconnect()
+                delete()
             }
         }
     }

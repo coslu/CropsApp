@@ -88,8 +88,9 @@ class CameraActivity : AppCompatActivity() {
     }
 
     override fun onStop() {
-        super.onStop()
         listener.disable()
+        NetworkOperations.defaultOperator.saveAwaitingFiles()
+        super.onStop()
     }
 
     override fun onRequestPermissionsResult(
