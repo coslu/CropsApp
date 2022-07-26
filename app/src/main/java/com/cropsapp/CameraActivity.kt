@@ -89,7 +89,7 @@ class CameraActivity : AppCompatActivity() {
 
     override fun onStop() {
         listener.disable()
-        NetworkOperations.defaultOperator.saveAwaitingFiles()
+        NetworkOperations.saveAwaitingFiles(this)
         super.onStop()
     }
 

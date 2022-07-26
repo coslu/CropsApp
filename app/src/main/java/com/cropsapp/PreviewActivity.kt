@@ -52,7 +52,7 @@ class PreviewActivity : AppCompatActivity() {
         //only keep the file if the save button is clicked, otherwise delete it
         saveFilesToDelete()
 
-        NetworkOperations.defaultOperator.saveAwaitingFiles()
+        NetworkOperations.saveAwaitingFiles(this)
         super.onStop()
     }
 

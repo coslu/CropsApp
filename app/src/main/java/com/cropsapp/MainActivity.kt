@@ -31,7 +31,7 @@ import java.net.URL
 import java.util.ArrayList
 import kotlin.math.max
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), Notifiable {
     companion object {
         private const val SERVER_URL = "https://sugarbeet-gbtudlapea-ew.a.run.app"
         private const val LOCAL_URL = "http://192.168.0.4:5000" //TODO remove
@@ -43,8 +43,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        NetworkOperations(this)
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -65,6 +63,9 @@ class MainActivity : AppCompatActivity() {
 
         //If there were discarded images from last time that were not deleted, delete them now
         deleteFiles()
+
+        //Get notified when the status of a file is changed
+        NetworkOperations.addNotifiable(this)
 
         mainAdapter = MainAdapter(getExternalFilesDir(Environment.DIRECTORY_PICTURES))
         binding.recyclerView.apply {
@@ -89,8 +90,17 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onStop() {
-        NetworkOperations.defaultOperator.saveAwaitingFiles()
+        NetworkOperations.saveAwaitingFiles(this)
         super.onStop()
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    override fun notifyStatusChanged() {
+        /* We need to notifyDataSetChanged because when this is called from NetworkOperations,
+        there is no way to know the position of the item that is changed. */
+        runOnUiThread {
+            mainAdapter.notifyDataSetChanged()
+        }
     }
 
     private fun addFile(uriString: String) {
@@ -98,7 +108,7 @@ class MainActivity : AppCompatActivity() {
         val textFile = file.getTextFile(this)
 
         CoroutineScope(Dispatchers.IO).launch {
-            NetworkOperations.defaultOperator.send(file, textFile)
+            NetworkOperations.send(file, textFile)
         }
     }
 
