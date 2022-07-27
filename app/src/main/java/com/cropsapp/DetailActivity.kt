@@ -3,6 +3,7 @@ package com.cropsapp
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.Menu
 import android.view.View
 import androidx.appcompat.content.res.AppCompatResources
 import com.bumptech.glide.Glide
@@ -46,8 +47,12 @@ class DetailActivity : AppCompatActivity(), Notifiable {
 
     override fun onStop() {
         NetworkOperations.saveAwaitingFiles(this)
-        NetworkOperations.removeNotifiable(this)
         super.onStop()
+    }
+
+    override fun onDestroy() {
+        NetworkOperations.removeNotifiable(this)
+        super.onDestroy()
     }
 
     override fun notifyStatusChanged() {

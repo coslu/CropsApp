@@ -30,5 +30,6 @@
     <string name="list_item_prediction_empty"> - </string>
     <string name="list_item_prediction">%1$.1f%%</string>
 
-    <string name="toast_error">Error</string>
+    <!-- Menu Actions -->
+    <string name="action_delete">Delete</string>
 </resources>

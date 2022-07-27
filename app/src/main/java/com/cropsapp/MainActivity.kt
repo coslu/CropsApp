@@ -119,7 +119,10 @@ class MainActivity : AppCompatActivity(), Notifiable {
         kotlin.runCatching {
             File(filesDir, "filesToDelete.txt").apply {
                 forEachLine {
-                    File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), it).delete()
+                    File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), it).apply {
+                        getTextFile(this@MainActivity).delete()
+                        delete()
+                    }
                 }
                 delete()
             }
