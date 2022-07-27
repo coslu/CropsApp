@@ -69,6 +69,7 @@ class DetailActivity : AppCompatActivity(), Notifiable {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.action_delete -> confirmDelete()
+            android.R.id.home -> finish()
         }
         return true
     }
