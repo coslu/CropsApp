@@ -1,35 +1,15 @@
 package com.cropsapp
 
-import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Intent
-import android.content.res.Configuration
-import android.net.Uri
 import android.os.*
-import android.provider.ContactsContract
-import android.util.Log
-import android.view.MotionEvent
-import android.view.OrientationEventListener
-import android.view.Surface
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
-import androidx.core.net.toUri
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.cropsapp.databinding.ActivityMainBinding
 import kotlinx.coroutines.*
-import java.io.BufferedInputStream
-import java.io.DataOutputStream
 import java.io.File
-import java.lang.IllegalArgumentException
-import java.net.HttpURLConnection
 import java.net.URI
-import java.net.URL
-import java.util.ArrayList
-import kotlin.math.max
 
 class MainActivity : AppCompatActivity(), Notifiable {
     companion object {
@@ -77,11 +57,19 @@ class MainActivity : AppCompatActivity(), Notifiable {
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
 
-        //if activity is launched from PreviewActivity by clicking the 'Save' button
         deleteFiles()
-        mainAdapter.updateFiles()
-        binding.recyclerView.smoothScrollToPosition(0)
-        intent?.getStringExtra("newFile")?.let { addFile(it) }
+
+        //if activity is launched from PreviewActivity by clicking the 'Save' button
+        intent?.getStringExtra("newFile")?.let {
+            mainAdapter.addFile()
+            binding.recyclerView.smoothScrollToPosition(0)
+            addFile(it)
+        }
+
+        //if activity is launched from DetailActivity by deleting the image
+        intent?.getStringExtra("deletedFile")?.let {
+            mainAdapter.deleteFile(it.toInt())
+        }
     }
 
     override fun onResume() {
@@ -95,12 +83,10 @@ class MainActivity : AppCompatActivity(), Notifiable {
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    override fun notifyStatusChanged() {
+    override fun notifyStatusChanged() = runOnUiThread {
         /* We need to notifyDataSetChanged because when this is called from NetworkOperations,
         there is no way to know the position of the item that is changed. */
-        runOnUiThread {
-            mainAdapter.notifyDataSetChanged()
-        }
+        mainAdapter.notifyDataSetChanged()
     }
 
     private fun addFile(uriString: String) {

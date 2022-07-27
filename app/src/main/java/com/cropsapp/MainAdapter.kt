@@ -44,12 +44,21 @@ class MainAdapter(private val picturesDirectory: File?) :
         files.sortByDescending { it.lastModified() }
     }
 
-    fun updateFiles() {
+    private fun updateFiles() {
         files =
             File(picturesDirectory, "").listFiles()
                 ?: emptyArray()
         files.sortByDescending { it.lastModified() }
+    }
+
+    fun addFile() {
+        updateFiles()
         notifyItemInserted(0)
+    }
+
+    fun deleteFile(position: Int) {
+        updateFiles()
+        notifyItemRemoved(position)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -104,6 +113,7 @@ class MainAdapter(private val picturesDirectory: File?) :
         holder.itemView.setOnClickListener {
             Intent(it.context, DetailActivity::class.java).apply {
                 putExtra("uri", files[position].toUri())
+                putExtra("position", holder.adapterPosition.toString())
                 it.context.startActivity(this)
             }
         }
