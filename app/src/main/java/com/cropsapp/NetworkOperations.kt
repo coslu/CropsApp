@@ -1,21 +1,17 @@
 package com.cropsapp
 
-import android.annotation.SuppressLint
 import android.content.Context
-import android.util.Log
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import java.io.BufferedInputStream
 import java.io.DataOutputStream
 import java.io.File
 import java.net.HttpURLConnection
 import java.net.URL
 
-class NetworkOperations() {
+class NetworkOperations {
     companion object {
         private const val SERVER_URL = "https://sugarbeet-gbtudlapea-ew.a.run.app"
         private const val LOCAL_URL = "http://192.168.0.4:5000" //TODO remove
-        private const val CONNECTION_TIMEOUT = 15000
+        private const val CONNECTION_TIMEOUT = 30000
         private val awaitingFiles = mutableListOf<String>()
         private val notifiables = mutableListOf<Notifiable>()
 
@@ -32,7 +28,7 @@ class NetworkOperations() {
                 it.notifyStatusChanged()
             }
 
-            val url = URL("${LOCAL_URL}/predict")
+            val url = URL("${SERVER_URL}/predict")
             val urlConnection = (url.openConnection() as HttpURLConnection).apply {
                 doOutput = true
                 addRequestProperty("Content-Type", "multipart/form-data;boundary=*****")
@@ -82,16 +78,4 @@ class NetworkOperations() {
         fun addNotifiable(notifiable: Notifiable) = notifiables.add(notifiable)
         fun removeNotifiable(notifiable: Notifiable) = notifiables.remove(notifiable)
     }
-
-    /*@SuppressLint("NotifyDataSetChanged")
-    private fun updateUi(detailActivity: DetailActivity?) {
-        mainActivity.runOnUiThread {
-            *//* we need to notifyDataSetChanged because there may be multiple of those running
-            and there is no reliable way to know the position of the data that changed *//*
-            mainActivity.mainAdapter.notifyDataSetChanged()
-        }
-        detailActivity?.runOnUiThread {
-            detailActivity.updateStatus()
-        }
-    }*/
 }

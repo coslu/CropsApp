@@ -1,19 +1,12 @@
 package com.cropsapp
 
-import android.content.Context
 import android.content.Intent
-import android.content.res.Resources
-import android.graphics.BitmapFactory
-import android.os.Environment
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.content.res.AppCompatResources
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.net.toUri
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -29,11 +22,11 @@ class MainAdapter(private val picturesDirectory: File?) :
     }
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val imageView = view.findViewById<ImageView>(R.id.image_view_list_main)
-        val textDate = view.findViewById<TextView>(R.id.text_date_list_main)
-        val textStatus = view.findViewById<TextView>(R.id.text_status_list_main)
-        val textPrediction = view.findViewById<TextView>(R.id.text_prediction_list_main)
-        val imageStatus = view.findViewById<ImageView>(R.id.image_status_list_main)
+        val imageView: ImageView = view.findViewById(R.id.image_view_list_main)
+        val textDate: TextView = view.findViewById(R.id.text_date_list_main)
+        val textStatus: TextView = view.findViewById(R.id.text_status_list_main)
+        val textPrediction: TextView = view.findViewById(R.id.text_prediction_list_main)
+        val imageStatus: ImageView = view.findViewById(R.id.image_status_list_main)
     }
 
     private var files =

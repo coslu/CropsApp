@@ -4,7 +4,6 @@ import android.content.Intent
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import com.bumptech.glide.Glide
 import com.cropsapp.databinding.ActivityPreviewBinding
 import java.io.File
@@ -14,7 +13,7 @@ class PreviewActivity : AppCompatActivity() {
     private lateinit var uri: Uri
     private lateinit var file: File
     private lateinit var binding: ActivityPreviewBinding
-    private lateinit var filesToDelete:File
+    private lateinit var filesToDelete: File
     private var set = mutableSetOf<String>()
 
     override fun onCreate(savedInstanceState: Bundle?) {

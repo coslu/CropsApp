@@ -12,14 +12,8 @@ import java.io.File
 import java.net.URI
 
 class MainActivity : AppCompatActivity(), Notifiable {
-    companion object {
-        private const val SERVER_URL = "https://sugarbeet-gbtudlapea-ew.a.run.app"
-        private const val LOCAL_URL = "http://192.168.0.4:5000" //TODO remove
-        private const val CONNECTION_TIMEOUT = 30000
-    }
-
     private lateinit var binding: ActivityMainBinding
-    lateinit var mainAdapter: MainAdapter
+    private lateinit var mainAdapter: MainAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

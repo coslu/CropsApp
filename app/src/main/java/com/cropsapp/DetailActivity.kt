@@ -111,7 +111,7 @@ class DetailActivity : AppCompatActivity(), Notifiable {
         setNegativeButton(R.string.alert_cancel) { dialog, _ ->
             dialog.cancel()
         }
-        setPositiveButton(R.string.alert_positive_delete) { dialog, _ ->
+        setPositiveButton(R.string.alert_positive_delete) { _, _ ->
             delete()
         }
         show()
