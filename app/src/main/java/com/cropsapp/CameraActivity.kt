@@ -1,27 +1,45 @@
 package com.cropsapp
 
 import android.Manifest
+import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.*
+import android.graphics.drawable.ShapeDrawable
+import android.graphics.drawable.shapes.RectShape
+import android.graphics.drawable.shapes.Shape
 import android.net.Uri
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Environment
 import android.provider.Settings
+import android.util.Log
+import android.util.Size
 import android.view.*
 import android.view.animation.AnimationUtils
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.camera.core.*
+import androidx.camera.core.impl.ImageAnalysisConfig
 import androidx.camera.lifecycle.ProcessCameraProvider
-import androidx.camera.view.PreviewView
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.cropsapp.databinding.ActivityCameraBinding
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import org.pytorch.IValue
+import org.pytorch.Module
+import org.pytorch.torchvision.TensorImageUtils
 import java.io.File
+import java.net.URI
 import java.util.*
+import java.util.concurrent.Executors
 
 class CameraActivity : AppCompatActivity() {
     companion object {
@@ -33,18 +51,28 @@ class CameraActivity : AppCompatActivity() {
         }.toTypedArray()
     }
 
+    private lateinit var preprocessing:Preprocessing
+    @androidx.camera.core.ExperimentalGetImage
+    private val imageAnalysis =
+        ImageAnalysis.Builder().setTargetResolution(Size(640, 640)).build().apply {
+            setAnalyzer(Executors.newFixedThreadPool(4)) {
+                analyze(it)
+            }
+        }
+
     private val imageCapture =
         ImageCapture.Builder().setCaptureMode(ImageCapture.CAPTURE_MODE_MAXIMIZE_QUALITY).build()
-    private lateinit var imageView: ImageView
-    private lateinit var previewView: PreviewView
+    private lateinit var binding: ActivityCameraBinding
     private lateinit var listener: OrientationEventListener
     private var permissionsDenied = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_camera)
-        previewView = findViewById(R.id.preview_view)
-        imageView = findViewById(R.id.camera_image_view)
+        binding = ActivityCameraBinding.inflate(layoutInflater)
+
+        setContentView(binding.root)
+
+        preprocessing = Preprocessing(this)
 
         /* OrientationEventListener to determine target image rotation of imageCapture.
         Is enabled onStart, disabled onStop */
@@ -79,12 +107,10 @@ class CameraActivity : AppCompatActivity() {
         if (permissionsDenied && allPermissionsGranted()) {
             permissionsDenied = false
             setContentView(R.layout.activity_camera)
-            previewView = findViewById(R.id.preview_view)
-            imageView = findViewById(R.id.camera_image_view)
             startCamera()
         }
         //remove freeze
-        imageView.visibility = View.GONE
+        binding.cameraImageView.visibility = View.GONE
     }
 
     override fun onStop() {
@@ -142,9 +168,15 @@ class CameraActivity : AppCompatActivity() {
             val preview = Preview.Builder().build()
             val cameraSelector =
                 CameraSelector.Builder().requireLensFacing(CameraSelector.LENS_FACING_BACK).build()
-            preview.setSurfaceProvider(previewView.surfaceProvider)
+            preview.setSurfaceProvider(binding.previewView.surfaceProvider)
 
-            cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageCapture)
+            cameraProvider.bindToLifecycle(
+                this,
+                cameraSelector,
+                preview,
+                imageCapture,
+                imageAnalysis
+            )
         }, ContextCompat.getMainExecutor(this))
 
         val takePictureButton = findViewById<FloatingActionButton>(R.id.button_take_picture)
@@ -159,8 +191,8 @@ class CameraActivity : AppCompatActivity() {
         borderView.startAnimation(animation)
 
         //static image to replace previewView
-        imageView.apply {
-            setImageBitmap(previewView.bitmap)
+        binding.cameraImageView.apply {
+            setImageBitmap(binding.previewView.bitmap)
             visibility = View.VISIBLE
         }
     }
@@ -184,9 +216,18 @@ class CameraActivity : AppCompatActivity() {
                 }
 
                 override fun onError(exception: ImageCaptureException) {
-                    //what TODO here?
                     Toast.makeText(applicationContext, exception.message, Toast.LENGTH_LONG).show()
                 }
             })
+    }
+
+    @androidx.camera.core.ExperimentalGetImage
+    private fun analyze(imageProxy: ImageProxy) {
+        val bitmap = imageProxy.image?.toBitmap()?.rotate(90f)
+        val boxes = bitmap?.let {
+            preprocessing.detect(it, binding.previewView.width, binding.previewView.height)
+        }
+        binding.rectangleView.draw(boxes)
+        imageProxy.close()
     }
 }

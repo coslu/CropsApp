@@ -11,7 +11,7 @@ class NetworkOperations {
     companion object {
         private const val SERVER_URL = "https://sugarbeet-gbtudlapea-ew.a.run.app"
         private const val LOCAL_URL = "http://192.168.0.4:5000" //TODO remove
-        private const val CONNECTION_TIMEOUT = 30000
+        private const val CONNECTION_TIMEOUT = 15000
         private val awaitingFiles = mutableListOf<String>()
         private val notifiables = mutableListOf<Notifiable>()
 
