@@ -68,13 +68,11 @@ class Preprocessing(context: Context) {
         }
         val boxes = mutableListOf<FloatArray>()
         val scores = mutableListOf<Float>()
-        val classes = mutableListOf<Boolean>()
 
-        for (array in list) {
-            array.forEachIndexed { i, _ -> if (i >= 5) array[i] *= array[4] }
-            scores.add(max(array[5], array[6])) //confidence of the most likely class
-            classes.add(array[5] >= array[6]) //true if sugar beet, false if other plant
-            boxes.add(convertCoordinates(array))
+        //only take boxes where most likely class is sugar beet
+        list.filter { array -> array[5] >= array[6] }.forEach {
+            boxes.add(convertCoordinates(it))
+            scores.add(it[5])
         }
 
         //Perform non max suppression
@@ -83,7 +81,7 @@ class Preprocessing(context: Context) {
             var discard = false
             boxes.forEachIndexed { j, box2 ->
                 if (iou(box1, box2) > IOU_THRESHOLD) {
-                    if (scores[j] > scores[i] && classes[j] == classes[i])
+                    if (scores[j] > scores[i])
                         discard = true
                 }
             }
