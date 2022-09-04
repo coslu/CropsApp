@@ -51,7 +51,10 @@ class CameraActivity : AppCompatActivity() {
         }.toTypedArray()
     }
 
-    private lateinit var preprocessing:Preprocessing
+    /*
+    setTargetResolution will make the aspect ratio 1:1 and take 640x640 if possible. We rescale the
+    bitmap to 640x640 in Preprocessing
+     */
     @androidx.camera.core.ExperimentalGetImage
     private val imageAnalysis =
         ImageAnalysis.Builder().setTargetResolution(Size(640, 640)).build().apply {
@@ -59,11 +62,11 @@ class CameraActivity : AppCompatActivity() {
                 analyze(it)
             }
         }
-
     private val imageCapture =
         ImageCapture.Builder().setCaptureMode(ImageCapture.CAPTURE_MODE_MAXIMIZE_QUALITY).build()
     private lateinit var binding: ActivityCameraBinding
     private lateinit var listener: OrientationEventListener
+    private lateinit var preprocessing: Preprocessing
     private var permissionsDenied = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -84,6 +87,7 @@ class CameraActivity : AppCompatActivity() {
                     in 45..135 -> Surface.ROTATION_270
                     else -> Surface.ROTATION_0
                 }
+                imageAnalysis.targetRotation = imageCapture.targetRotation
             }
         }
 
@@ -223,9 +227,15 @@ class CameraActivity : AppCompatActivity() {
 
     @androidx.camera.core.ExperimentalGetImage
     private fun analyze(imageProxy: ImageProxy) {
-        val bitmap = imageProxy.image?.toBitmap()?.rotate(90f)
+        val rotationDegrees = imageProxy.imageInfo.rotationDegrees.toFloat()
+        val bitmap = imageProxy.image?.toBitmap()?.rotate(rotationDegrees)
         val boxes = bitmap?.let {
-            preprocessing.detect(it, binding.previewView.width, binding.previewView.height)
+            preprocessing.detect(
+                it,
+                binding.previewView.width,
+                binding.previewView.height,
+                rotationDegrees - 90
+            )
         }
         binding.rectangleView.draw(boxes)
         imageProxy.close()

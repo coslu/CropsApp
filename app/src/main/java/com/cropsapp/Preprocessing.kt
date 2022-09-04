@@ -27,7 +27,7 @@ class Preprocessing(context: Context) {
         module = Module.load(modelFile.absolutePath)
     }
 
-    fun detect(bitmap: Bitmap, width: Int, height: Int): Set<FloatArray> {
+    fun detect(bitmap: Bitmap, width: Int, height: Int, rotationDegrees: Float): Set<FloatArray> {
         val bitmapScaled = Bitmap.createScaledBitmap(bitmap, 640, 640, true)
 
         val input = TensorImageUtils.bitmapToFloat32Tensor(
@@ -38,19 +38,53 @@ class Preprocessing(context: Context) {
         val scores = module.forward(IValue.from(input)).toTuple()[0].toTensor()
         val boxes = nonMaxSuppression(scores.dataAsFloatArray)
         boxes.forEach {
-            scaleBox(it, width.toFloat(), height.toFloat())
+            it.rotate(rotationDegrees)
+            it.scaleBox(width.toFloat(), height.toFloat())
         }
         return boxes
     }
 
     /**
-     * Scales the box from 640x640 to given width and height
+     * Scales the box from 640x640 to given width and height and makes it a square
      */
-    private fun scaleBox(box: FloatArray, width: Float, height: Float) {
-        box[0] *= (width / 640)
-        box[1] *= (height / 640)
-        box[2] *= (width / 640)
-        box[3] *= (height / 640)
+    private fun FloatArray.scaleBox(width: Float, height: Float) {
+        this[0] *= (width / 640)
+        this[1] *= (height / 640)
+        this[2] *= (width / 640)
+        this[3] *= (height / 640)
+        convertToCenterCoordinate()
+        if (width > height)
+            this[2] = this[3]
+        else
+            this[3] = this[2]
+        convertToCoordinates()
+    }
+
+    /**
+     * Adapts the coordinates of the box if the source image was rotated by rotationDegrees
+     */
+    private fun FloatArray.rotate(rotationDegrees: Float) {
+        val box = copyOf()
+        when(rotationDegrees) {
+            90f -> {
+                this[0] = box[1]
+                this[1] = 640 - box[2]
+                this[2] = box[3]
+                this[3] = 640 - box[0]
+            }
+            180f -> {
+                this[0] = 640 - box[2]
+                this[1] = 640 - box[3]
+                this[2] = 640 - box[0]
+                this[3] = 640 - box[1]
+            }
+            -90f -> {
+                this[0] = 640 - box[3]
+                this[1] = box[0]
+                this[2] = 640 - box[1]
+                this[3] = box[2]
+            }
+        }
     }
 
     private fun nonMaxSuppression(prediction: FloatArray): Set<FloatArray> {
@@ -71,7 +105,8 @@ class Preprocessing(context: Context) {
 
         //only take boxes where most likely class is sugar beet
         list.filter { array -> array[5] >= array[6] }.forEach {
-            boxes.add(convertCoordinates(it))
+            it.convertToCoordinates()
+            boxes.add(it)
             scores.add(it[5])
         }
 
@@ -112,17 +147,28 @@ class Preprocessing(context: Context) {
     }
 
     /**
-     * Converts the given box from x(center), y(center), width, height to x(top left), y(top left),
-     * x(bottom right), y(bottom right)
+     * Converts the given box from x(center), y(center), width, height
+     * to x(top left), y(top left), x(bottom right), y(bottom right)
      */
-    private fun convertCoordinates(arr: FloatArray): FloatArray {
-        val box = FloatArray(4)
+    private fun FloatArray.convertToCoordinates() {
+        val box = copyOf()
 
-        box[0] = arr[0] - arr[2] / 2
-        box[1] = arr[1] - arr[3] / 2
-        box[2] = arr[0] + arr[2] / 2
-        box[3] = arr[1] + arr[3] / 2
+        this[0] -= box[2] / 2
+        this[1] -= box[3] / 2
+        this[2] = box[0] + box[2] / 2
+        this[3] = box[1] + box[3] / 2
+    }
 
-        return box
+    /**
+     * Converts the given box from x(top left), y(top left), x(bottom right), y(bottom right)
+     * to x(center), y(center), width, height
+     */
+    private fun FloatArray.convertToCenterCoordinate() {
+        val box = copyOf()
+
+        this[0] = (box[0] + box[2]) / 2
+        this[1] = (box[1] + box[3]) / 2
+        this[2] -= box[0]
+        this[3] -= box[1]
     }
 }
