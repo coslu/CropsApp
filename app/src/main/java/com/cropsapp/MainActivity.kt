@@ -2,6 +2,9 @@ package com.cropsapp
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.net.Uri
 import android.os.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.DividerItemDecoration
@@ -14,6 +17,7 @@ import java.net.URI
 class MainActivity : AppCompatActivity(), Notifiable {
     private lateinit var binding: ActivityMainBinding
     private lateinit var mainAdapter: MainAdapter
+    private lateinit var preprocessing: Preprocessing
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -23,8 +27,10 @@ class MainActivity : AppCompatActivity(), Notifiable {
 
         setSupportActionBar(binding.toolbar)
 
-        binding.fab.setOnClickListener { view ->
-            val intent = Intent(view.context, CameraActivity::class.java)
+        preprocessing = Preprocessing(this)
+
+        binding.fab.setOnClickListener {
+            val intent = Intent(this, CameraActivity::class.java)
             startActivity(intent)
         }
 
@@ -86,9 +92,12 @@ class MainActivity : AppCompatActivity(), Notifiable {
     private fun addFile(uriString: String) {
         val file = File(URI(uriString))
         val textFile = file.getTextFile(this)
+        val processedBitmap = preprocessing.crop(BitmapFactory.decodeFile(file.path))
+        val newFile = File(filesDir, file.name)
+        processedBitmap.compress(Bitmap.CompressFormat.JPEG, 100, newFile.outputStream())
 
         CoroutineScope(Dispatchers.IO).launch {
-            NetworkOperations.send(file, textFile)
+            NetworkOperations.send(newFile, textFile)
         }
     }
 

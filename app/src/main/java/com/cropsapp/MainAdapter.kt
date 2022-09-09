@@ -27,20 +27,17 @@ class MainAdapter(private val picturesDirectory: File?) :
         val textStatus: TextView = view.findViewById(R.id.text_status_list_main)
         val textPrediction: TextView = view.findViewById(R.id.text_prediction_list_main)
         val imageStatus: ImageView = view.findViewById(R.id.image_status_list_main)
+        lateinit var file: File
     }
 
-    private var files =
-        File(picturesDirectory, "").listFiles()
-            ?: emptyArray()
+    private lateinit var files: Array<File>
 
     init {
-        files.sortByDescending { it.lastModified() }
+        updateFiles()
     }
 
     private fun updateFiles() {
-        files =
-            File(picturesDirectory, "").listFiles()
-                ?: emptyArray()
+        files = File(picturesDirectory, "").listFiles() ?: emptyArray()
         files.sortByDescending { it.lastModified() }
     }
 
@@ -62,14 +59,15 @@ class MainAdapter(private val picturesDirectory: File?) :
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        Glide.with(holder.imageView.context).load(files[position]).into(holder.imageView)
+        holder.file = files[position]
+        Glide.with(holder.imageView.context).load(holder.file).into(holder.imageView)
         holder.textDate.text = DateFormat
             .getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.GERMANY)
-            .format(Date(files[position].lastModified()))
+            .format(Date(holder.file.lastModified()))
         holder.textPrediction.text = holder.textPrediction.context
             .getString(R.string.list_item_prediction_empty)
         with(holder.textStatus.context) {
-            val textFile = files[position].getTextFile(this)
+            val textFile = holder.file.getTextFile(this)
             try {
                 val result = textFile.readText().toDouble()
                 if (result in 0.0..100.0)
@@ -105,8 +103,8 @@ class MainAdapter(private val picturesDirectory: File?) :
 
         holder.itemView.setOnClickListener {
             Intent(it.context, DetailActivity::class.java).apply {
-                putExtra("uri", files[position].toUri())
-                putExtra("position", holder.adapterPosition.toString())
+                putExtra("uri", holder.file.toUri())
+                putExtra("position", holder.layoutPosition.toString())
                 it.context.startActivity(this)
             }
         }

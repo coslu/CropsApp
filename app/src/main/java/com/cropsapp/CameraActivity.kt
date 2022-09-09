@@ -234,7 +234,8 @@ class CameraActivity : AppCompatActivity() {
                 it,
                 binding.previewView.width,
                 binding.previewView.height,
-                rotationDegrees - 90
+                rotationDegrees - 90,
+                true
             )
         }
         binding.rectangleView.draw(boxes)

@@ -2,12 +2,15 @@ package com.cropsapp
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.util.Log
 import org.pytorch.IValue
 import org.pytorch.Module
 import org.pytorch.torchvision.TensorImageUtils
 import java.io.File
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.pow
 
 class Preprocessing(context: Context) {
     companion object {
@@ -27,11 +30,74 @@ class Preprocessing(context: Context) {
         module = Module.load(modelFile.absolutePath)
     }
 
-    fun detect(bitmap: Bitmap, width: Int, height: Int, rotationDegrees: Float): Set<FloatArray> {
-        val bitmapScaled = Bitmap.createScaledBitmap(bitmap, 640, 640, true)
+    /**
+     * Runs object detection on the given image, crops the image to the detected box that is
+     * the closest to the center and returns the cropped image. Returns the original image if
+     * no boxes are found.
+     */
+    fun crop(bitmap: Bitmap): Bitmap {
+        val paddedBitmap: Bitmap
+        val size: Int
+        if (bitmap.width > bitmap.height) {
+            size = bitmap.width
+            val difference = bitmap.width - bitmap.height
+            paddedBitmap = Bitmap.createBitmap(bitmap.width, bitmap.width, bitmap.config)
+            Canvas(paddedBitmap).apply {
+                drawARGB(0xFF, 0, 0, 0)
+                drawBitmap(bitmap, 0f, difference / 2f, null)
+            }
+        } else {
+            size = bitmap.height
+            val difference = bitmap.height - bitmap.width
+            paddedBitmap = Bitmap.createBitmap(bitmap.height, bitmap.height, bitmap.config)
+            Canvas(paddedBitmap).apply {
+                drawARGB(0xFF, 0, 0, 0)
+                drawBitmap(bitmap, difference / 2f, 0f, null)
+            }
+        }
+        val boxes = detect(paddedBitmap, size, size)
+        var bestBox = floatArrayOf()
+        boxes.forEach { box ->
+            box.convertToCenterCoordinate()
+            val center = size / 2
+            if (bestBox.isEmpty() || distance(box, center) < distance(bestBox, center)) {
+                bestBox = box
+            }
+        }
+        if (bestBox.isEmpty()) {
+            return bitmap
+        }
+        val x = (bestBox[0] - bestBox[2] / 2).toInt().coerceIn(0..size)
+        val y = (bestBox[1] - bestBox[3] / 2).toInt().coerceIn(0..size)
+        val width = bestBox[2].toInt()
+        val height = bestBox[3].toInt()
+        return Bitmap.createBitmap(paddedBitmap, x, y, width, height)
+    }
+
+    /**
+     * Given box and the center point of the square image, returns the distance of the box
+     * to the center
+     */
+    private fun distance(box: FloatArray, center: Int): Float {
+        return (box[0] - center).pow(2) + (box[1] - center).pow(2)
+    }
+
+    /**
+     * Scales the given bitmap to 640x640, runs the preprocessing model, returns the found boxes
+     * rescaled to the given width and height and rotated if necessary. Boxes are made squares
+     * for the real-time detection.
+     */
+    fun detect(
+        bitmap: Bitmap,
+        width: Int,
+        height: Int,
+        rotationDegrees: Float = 0f,
+        makeSquare: Boolean = false
+    ): Set<FloatArray> {
+        val scaledBitmap = Bitmap.createScaledBitmap(bitmap, 640, 640, true)
 
         val input = TensorImageUtils.bitmapToFloat32Tensor(
-            bitmapScaled,
+            scaledBitmap,
             floatArrayOf(0f, 0f, 0f),
             floatArrayOf(1f, 1f, 1f)
         )
@@ -39,25 +105,29 @@ class Preprocessing(context: Context) {
         val boxes = nonMaxSuppression(scores.dataAsFloatArray)
         boxes.forEach {
             it.rotate(rotationDegrees)
-            it.scaleBox(width.toFloat(), height.toFloat())
+            it.scaleBox(width.toFloat(), height.toFloat(), makeSquare)
         }
         return boxes
     }
 
     /**
-     * Scales the box from 640x640 to given width and height and makes it a square
+     * Scales a box on a 640x640 image to a box on an image with the given width and height.
+     * Optionally makes the box a square.
      */
-    private fun FloatArray.scaleBox(width: Float, height: Float) {
+    private fun FloatArray.scaleBox(width: Float, height: Float, makeSquare: Boolean) {
         this[0] *= (width / 640)
         this[1] *= (height / 640)
         this[2] *= (width / 640)
         this[3] *= (height / 640)
-        convertToCenterCoordinate()
-        if (width > height)
-            this[2] = this[3]
-        else
-            this[3] = this[2]
-        convertToCoordinates()
+
+        if (makeSquare) {
+            convertToCenterCoordinate()
+            if (width > height)
+                this[2] = this[3]
+            else
+                this[3] = this[2]
+            convertToCoordinates()
+        }
     }
 
     /**
@@ -65,7 +135,7 @@ class Preprocessing(context: Context) {
      */
     private fun FloatArray.rotate(rotationDegrees: Float) {
         val box = copyOf()
-        when(rotationDegrees) {
+        when (rotationDegrees) {
             90f -> {
                 this[0] = box[1]
                 this[1] = 640 - box[2]
