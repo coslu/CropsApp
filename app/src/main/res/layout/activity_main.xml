@@ -35,6 +35,9 @@
         android:layout_marginEnd="@dimen/fab_margin"
         android:layout_marginBottom="16dp"
         app:srcCompat="@drawable/ic_baseline_photo_camera_24"
+        style="@style/Widget.Material3.FloatingActionButton.Primary"
+        android:backgroundTint="@color/yellow"
+        app:tint="@color/black"
         android:contentDescription="@string/content_description_main_fab" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

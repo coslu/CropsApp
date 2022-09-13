@@ -17,7 +17,6 @@ import java.net.URI
 class MainActivity : AppCompatActivity(), Notifiable {
     private lateinit var binding: ActivityMainBinding
     private lateinit var mainAdapter: MainAdapter
-    private lateinit var preprocessing: Preprocessing
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -26,8 +25,6 @@ class MainActivity : AppCompatActivity(), Notifiable {
         setContentView(binding.root)
 
         setSupportActionBar(binding.toolbar)
-
-        preprocessing = Preprocessing(this)
 
         binding.fab.setOnClickListener {
             val intent = Intent(this, CameraActivity::class.java)
@@ -52,6 +49,9 @@ class MainActivity : AppCompatActivity(), Notifiable {
             adapter = mainAdapter
             addItemDecoration(DividerItemDecoration(context, LinearLayoutManager.VERTICAL))
         }
+
+        //instantiate preprocessing
+        Preprocessing(this)
     }
 
     override fun onNewIntent(intent: Intent?) {
@@ -89,20 +89,20 @@ class MainActivity : AppCompatActivity(), Notifiable {
         mainAdapter.notifyDataSetChanged()
     }
 
+    /**
+     * Runs preprocessing on the new file that has arrived from PreviewActivity and sends it
+     * to the server
+     */
     private fun addFile(uriString: String) {
         val file = File(URI(uriString))
-        val textFile = file.getTextFile(this)
-        val processedBitmap = preprocessing.crop(BitmapFactory.decodeFile(file.path))
-        val newFile = File(filesDir, file.name)
-        processedBitmap.compress(Bitmap.CompressFormat.JPEG, 100, newFile.outputStream())
 
         CoroutineScope(Dispatchers.IO).launch {
-            NetworkOperations.send(newFile, textFile)
+            NetworkOperations.send(file, this@MainActivity)
         }
     }
 
     /**
-     * Deletes all images that were discarded from PreviewActivity
+     * Deletes all images that were discarded from PreviewActivity or deleted from DetailActivity
      */
     private fun deleteFiles() {
         kotlin.runCatching {

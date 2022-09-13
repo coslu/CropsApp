@@ -27,6 +27,9 @@ class RectangleView constructor(context: Context?, attributeSet: AttributeSet?) 
         }
     }
 
+    /**
+     * Draws the given set of boxes onto the canvas
+     */
     fun draw(boxes: Set<FloatArray>?) {
         boxes?.apply {
             rectangles = map { box ->

@@ -3,7 +3,6 @@ package com.cropsapp
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
-import android.util.Log
 import org.pytorch.IValue
 import org.pytorch.Module
 import org.pytorch.torchvision.TensorImageUtils
@@ -13,15 +12,11 @@ import kotlin.math.min
 import kotlin.math.pow
 
 class Preprocessing(context: Context) {
-    companion object {
-        private const val CONFIDENCE_THRESHOLD = 0.25
-        private const val IOU_THRESHOLD = 0.45
-    }
-
     private val modelFile = File(context.filesDir, "scripted_best.pt")
     private val module: Module
 
     init {
+        instance = this
         if (!modelFile.exists() || modelFile.length() == 0L) {
             val inputStream = context.assets.open("scripted_best.pt") //throws IO
             val outputStream = modelFile.outputStream()
@@ -240,5 +235,11 @@ class Preprocessing(context: Context) {
         this[1] = (box[1] + box[3]) / 2
         this[2] -= box[0]
         this[3] -= box[1]
+    }
+
+    companion object {
+        private const val CONFIDENCE_THRESHOLD = 0.25
+        private const val IOU_THRESHOLD = 0.45
+        lateinit var instance: Preprocessing
     }
 }

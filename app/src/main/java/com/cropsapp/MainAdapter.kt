@@ -16,11 +16,6 @@ import java.util.*
 
 class MainAdapter(private val picturesDirectory: File?) :
     RecyclerView.Adapter<MainAdapter.ViewHolder>() {
-    companion object {
-        const val STATUS_ERROR = -2.0
-        const val STATUS_AWAITING = -1.0
-    }
-
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val imageView: ImageView = view.findViewById(R.id.image_view_list_main)
         val textDate: TextView = view.findViewById(R.id.text_date_list_main)
@@ -112,5 +107,10 @@ class MainAdapter(private val picturesDirectory: File?) :
 
     override fun getItemCount(): Int {
         return files.size
+    }
+
+    companion object {
+        const val STATUS_ERROR = -2.0
+        const val STATUS_AWAITING = -1.0
     }
 }

@@ -42,15 +42,6 @@ import java.util.*
 import java.util.concurrent.Executors
 
 class CameraActivity : AppCompatActivity() {
-    companion object {
-        private const val REQUEST_CODE_PERMISSIONS = 1
-        private val REQUIRED_PERMISSIONS = mutableListOf(Manifest.permission.CAMERA).apply {
-            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
-                add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-            }
-        }.toTypedArray()
-    }
-
     /*
     setTargetResolution will make the aspect ratio 1:1 and take 640x640 if possible. We rescale the
     bitmap to 640x640 in Preprocessing
@@ -66,7 +57,6 @@ class CameraActivity : AppCompatActivity() {
         ImageCapture.Builder().setCaptureMode(ImageCapture.CAPTURE_MODE_MAXIMIZE_QUALITY).build()
     private lateinit var binding: ActivityCameraBinding
     private lateinit var listener: OrientationEventListener
-    private lateinit var preprocessing: Preprocessing
     private var permissionsDenied = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -74,8 +64,6 @@ class CameraActivity : AppCompatActivity() {
         binding = ActivityCameraBinding.inflate(layoutInflater)
 
         setContentView(binding.root)
-
-        preprocessing = Preprocessing(this)
 
         /* OrientationEventListener to determine target image rotation of imageCapture.
         Is enabled onStart, disabled onStop */
@@ -230,7 +218,7 @@ class CameraActivity : AppCompatActivity() {
         val rotationDegrees = imageProxy.imageInfo.rotationDegrees.toFloat()
         val bitmap = imageProxy.image?.toBitmap()?.rotate(rotationDegrees)
         val boxes = bitmap?.let {
-            preprocessing.detect(
+            Preprocessing.instance.detect(
                 it,
                 binding.previewView.width,
                 binding.previewView.height,
@@ -240,5 +228,14 @@ class CameraActivity : AppCompatActivity() {
         }
         binding.rectangleView.draw(boxes)
         imageProxy.close()
+    }
+
+    companion object {
+        private const val REQUEST_CODE_PERMISSIONS = 1
+        private val REQUIRED_PERMISSIONS = mutableListOf(Manifest.permission.CAMERA).apply {
+            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
+                add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            }
+        }.toTypedArray()
     }
 }

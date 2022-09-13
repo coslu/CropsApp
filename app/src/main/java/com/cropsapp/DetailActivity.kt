@@ -1,6 +1,8 @@
 package com.cropsapp
 
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -46,7 +48,7 @@ class DetailActivity : AppCompatActivity(), Notifiable {
 
         binding.buttonRetryDetail.setOnClickListener {
             CoroutineScope(Dispatchers.IO).launch {
-                NetworkOperations.send(file, textFile)
+                NetworkOperations.send(file, this@DetailActivity)
             }
         }
     }
@@ -105,6 +107,9 @@ class DetailActivity : AppCompatActivity(), Notifiable {
         }
     }
 
+    /**
+     * Creates and shows an AlertDialog to confirm deletion of the file
+     */
     private fun confirmDelete() = AlertDialog.Builder(this).apply {
         setTitle(R.string.alert_title_delete)
         setMessage(R.string.alert_message_delete)
@@ -118,6 +123,9 @@ class DetailActivity : AppCompatActivity(), Notifiable {
     }
 
 
+    /**
+     * Deletes the file associated with this activity
+     */
     private fun delete() {
         File(filesDir, "filesToDelete.txt").writeText(file.name)
         Intent(this, MainActivity::class.java).apply {

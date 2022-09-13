@@ -6,10 +6,8 @@ import android.media.Image
 import java.io.ByteArrayOutputStream
 import java.io.File
 
-
 fun File.getTextFile(context: Context): File =
     File(context.filesDir, "${nameWithoutExtension}.txt")
-
 
 // copied from https://stackoverflow.com/a/56812799
 fun Image.toBitmap(): Bitmap {

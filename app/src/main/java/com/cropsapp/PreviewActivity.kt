@@ -13,8 +13,8 @@ class PreviewActivity : AppCompatActivity() {
     private lateinit var uri: Uri
     private lateinit var file: File
     private lateinit var binding: ActivityPreviewBinding
-    private lateinit var filesToDelete: File
-    private var set = mutableSetOf<String>()
+    private lateinit var deletionFile: File
+    private var filesToDelete = mutableSetOf<String>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -22,23 +22,23 @@ class PreviewActivity : AppCompatActivity() {
         setContentView(binding.root)
         supportActionBar?.title = getString(R.string.title_preview)
 
-        filesToDelete = File(filesDir, "filesToDelete.txt")
+        deletionFile = File(filesDir, "filesToDelete.txt")
         kotlin.runCatching {
-            set = filesToDelete.readLines().toMutableSet()
+            filesToDelete = deletionFile.readLines().toMutableSet()
         }
 
         //set image from the saved file uri
         uri = Uri.parse(intent.getStringExtra("uri"))
         file = File(URI(uri.toString()))
 
-        set.add(file.name)
+        filesToDelete.add(file.name)
 
         Glide.with(this).load(uri).into(binding.previewImageView)
         binding.buttonDiscard.setOnClickListener {
             finish()
         }
         binding.buttonSave.setOnClickListener {
-            set.remove(file.name)
+            filesToDelete.remove(file.name)
             saveFilesToDelete()
             Intent(this, MainActivity::class.java).apply {
                 putExtra("newFile", uri.toString())
@@ -56,9 +56,9 @@ class PreviewActivity : AppCompatActivity() {
     }
 
     private fun saveFilesToDelete() {
-        filesToDelete.delete()
-        set.forEach {
-            filesToDelete.appendText("$it\n")
+        deletionFile.delete()
+        filesToDelete.forEach {
+            deletionFile.appendText("$it\n")
         }
     }
 }
