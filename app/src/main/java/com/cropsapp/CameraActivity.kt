@@ -46,13 +46,8 @@ class CameraActivity : AppCompatActivity() {
     setTargetResolution will make the aspect ratio 1:1 and take 640x640 if possible. We rescale the
     bitmap to 640x640 in Preprocessing
      */
-    @androidx.camera.core.ExperimentalGetImage
     private val imageAnalysis =
-        ImageAnalysis.Builder().setTargetResolution(Size(640, 640)).build().apply {
-            setAnalyzer(Executors.newFixedThreadPool(4)) {
-                analyze(it)
-            }
-        }
+        ImageAnalysis.Builder().setTargetResolution(Size(640, 640)).build()
     private val imageCapture =
         ImageCapture.Builder().setCaptureMode(ImageCapture.CAPTURE_MODE_MAXIMIZE_QUALITY).build()
     private lateinit var binding: ActivityCameraBinding
@@ -89,6 +84,7 @@ class CameraActivity : AppCompatActivity() {
         }
     }
 
+    @androidx.camera.core.ExperimentalGetImage
     override fun onStart() {
         super.onStart()
 
@@ -103,6 +99,9 @@ class CameraActivity : AppCompatActivity() {
         }
         //remove freeze
         binding.cameraImageView.visibility = View.GONE
+        imageAnalysis.setAnalyzer(Executors.newCachedThreadPool()) {
+            analyze(it)
+        }
     }
 
     override fun onStop() {
@@ -190,6 +189,7 @@ class CameraActivity : AppCompatActivity() {
     }
 
     private fun takePicture() {
+        imageAnalysis.clearAnalyzer()
         freezePreview()
 
         //data of the saved image
