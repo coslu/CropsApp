@@ -20,6 +20,7 @@ class PreviewActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityPreviewBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        setSupportActionBar(binding.topAppBar)
         supportActionBar?.title = getString(R.string.title_preview)
 
         deletionFile = File(filesDir, "filesToDelete.txt")

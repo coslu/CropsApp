@@ -1,18 +1,17 @@
 package com.cropsapp
 
 import android.content.Intent
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.content.res.AppCompatResources
+import androidx.core.net.toUri
 import com.bumptech.glide.Glide
 import com.cropsapp.databinding.ActivityDetailBinding
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -34,8 +33,10 @@ class DetailActivity : AppCompatActivity(), Notifiable {
         position = intent.getStringExtra("position")
 
         binding = ActivityDetailBinding.inflate(layoutInflater)
+        setSupportActionBar(binding.topAppBar)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
         setContentView(binding.root)
-        val uri = intent.getParcelableExtra<Uri>("uri")
+        val uri = intent.getStringExtra("uriString")?.toUri()
         Glide.with(this).load(uri).into(binding.imageViewDetail)
 
         file = File(URI(uri.toString()))
@@ -81,7 +82,7 @@ class DetailActivity : AppCompatActivity(), Notifiable {
             -1.0 -> {
                 binding.imageStatusDetail.setImageDrawable(
                     AppCompatResources
-                        .getDrawable(this, R.drawable.ic_baseline_access_time_24)
+                        .getDrawable(this, R.drawable.ic_schedule_24)
                 )
 
                 binding.textPredictionDetail.text = getString(R.string.list_item_awaiting)
@@ -90,7 +91,7 @@ class DetailActivity : AppCompatActivity(), Notifiable {
             in 0.0..100.0 -> {
                 binding.imageStatusDetail.setImageDrawable(
                     AppCompatResources
-                        .getDrawable(this, R.drawable.ic_baseline_done_24)
+                        .getDrawable(this, R.drawable.ic_check_circle_24)
                 )
                 binding.textPredictionDetail.text =
                     getString(R.string.list_item_prediction, result)
@@ -99,7 +100,7 @@ class DetailActivity : AppCompatActivity(), Notifiable {
             else -> {
                 binding.imageStatusDetail.setImageDrawable(
                     AppCompatResources
-                        .getDrawable(this, R.drawable.ic_baseline_error_outline_24)
+                        .getDrawable(this, R.drawable.ic_error_24)
                 )
                 binding.textPredictionDetail.text = getString(R.string.list_item_error)
                 binding.buttonRetryDetail.visibility = View.VISIBLE
@@ -110,17 +111,21 @@ class DetailActivity : AppCompatActivity(), Notifiable {
     /**
      * Creates and shows an AlertDialog to confirm deletion of the file
      */
-    private fun confirmDelete() = AlertDialog.Builder(this).apply {
-        setTitle(R.string.alert_title_delete)
-        setMessage(R.string.alert_message_delete)
-        setNegativeButton(R.string.alert_cancel) { dialog, _ ->
-            dialog.cancel()
-        }
-        setPositiveButton(R.string.alert_positive_delete) { _, _ ->
-            delete()
-        }
-        show()
-    }
+    private fun confirmDelete() =
+        MaterialAlertDialogBuilder(
+            this,
+            com.google.android.material.R.style.ThemeOverlay_Material3_MaterialAlertDialog_Centered
+        )
+            .setTitle(R.string.alert_title_delete)
+            .setMessage(R.string.alert_message_delete)
+            .setNeutralButton(R.string.alert_cancel) { dialog, _ ->
+                dialog.cancel()
+            }
+            .setPositiveButton(R.string.alert_positive_delete) { _, _ ->
+                delete()
+            }
+            .setIcon(R.drawable.ic_delete_24)
+            .show()
 
 
     /**

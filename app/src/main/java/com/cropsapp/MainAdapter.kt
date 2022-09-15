@@ -77,15 +77,15 @@ class MainAdapter(private val picturesDirectory: File?) :
                     when (result) {
                         STATUS_AWAITING -> AppCompatResources.getDrawable(
                             this,
-                            R.drawable.ic_baseline_access_time_24
+                            R.drawable.ic_schedule_24
                         )
                         in 0.0..100.0 -> AppCompatResources.getDrawable(
                             this,
-                            R.drawable.ic_baseline_done_24
+                            R.drawable.ic_check_circle_24
                         )
                         else -> AppCompatResources.getDrawable(
                             this,
-                            R.drawable.ic_baseline_error_outline_24
+                            R.drawable.ic_error_24
                         )
                     }
                 )
@@ -98,7 +98,7 @@ class MainAdapter(private val picturesDirectory: File?) :
 
         holder.itemView.setOnClickListener {
             Intent(it.context, DetailActivity::class.java).apply {
-                putExtra("uri", holder.file.toUri())
+                putExtra("uriString", holder.file.toUri().toString())
                 putExtra("position", holder.layoutPosition.toString())
                 it.context.startActivity(this)
             }

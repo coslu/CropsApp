@@ -24,7 +24,7 @@
 
         <Button
             android:id="@+id/button_grant_permission"
-            style="@style/FilledButtonStyle"
+            style="@style/Widget.Material3.Button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="10dp"
@@ -34,7 +34,7 @@
 
         <Button
             android:id="@+id/button_permission_back"
-            style="@style/OutlinedButtonStyle"
+            style="@style/Widget.Material3.Button.OutlinedButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="10dp"

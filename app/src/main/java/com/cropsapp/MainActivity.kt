@@ -2,9 +2,6 @@ package com.cropsapp
 
 import android.annotation.SuppressLint
 import android.content.Intent
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.net.Uri
 import android.os.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.DividerItemDecoration
@@ -24,8 +21,7 @@ class MainActivity : AppCompatActivity(), Notifiable {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        setSupportActionBar(binding.toolbar)
-
+        setSupportActionBar(binding.topAppBar)
         binding.fab.setOnClickListener {
             val intent = Intent(this, CameraActivity::class.java)
             startActivity(intent)

@@ -4,12 +4,22 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
     tools:context=".DetailActivity">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/topAppBar"
+        app:layout_constraintTop_toTopOf="parent"
+        android:fitsSystemWindows="true"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize" />
+
     <ImageView
         android:id="@+id/image_view_detail"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
         android:contentDescription="@string/content_description_list_item"
+        android:layout_marginTop="?attr/actionBarSize"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintVertical_weight="1"
@@ -38,7 +48,7 @@
             android:layout_height="wrap_content"
             android:contentDescription="@string/content_description_status_icon"
             android:layout_marginEnd="10dp"
-            android:src="@drawable/ic_baseline_error_outline_24" />
+            android:src="@drawable/ic_error_24" />
         <TextView
             android:id="@+id/text_prediction_detail"
             android:layout_width="wrap_content"
@@ -51,11 +61,10 @@
             android:id="@+id/button_retry_detail"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="20sp"
             android:layout_marginStart="10dp"
             android:text="@string/button_retry"
             app:icon="@drawable/ic_baseline_refresh_24"
-            style="@style/Widget.Material3.Button.TextButton.Icon" />
+            style="@style/Widget.Material3.Button.TonalButton.Icon" />
     </LinearLayout>
 
 
