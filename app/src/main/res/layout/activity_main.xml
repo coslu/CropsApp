@@ -37,4 +37,14 @@
         style="@style/Widget.Material3.FloatingActionButton.Primary"
         android:contentDescription="@string/content_description_main_fab" />
 
+    <TextView
+        android:id="@+id/text_landing"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/text_landing_page"
+        android:layout_gravity="center"
+        android:padding="20dp"
+        android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
+        android:textAlignment="center"/>
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

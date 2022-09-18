@@ -1,51 +1,32 @@
 package com.cropsapp
 
 import android.Manifest
-import android.annotation.SuppressLint
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.*
-import android.graphics.drawable.ShapeDrawable
-import android.graphics.drawable.shapes.RectShape
-import android.graphics.drawable.shapes.Shape
 import android.net.Uri
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Environment
 import android.provider.Settings
-import android.util.Log
 import android.util.Size
 import android.view.*
 import android.view.animation.AnimationUtils
 import android.widget.Button
-import android.widget.ImageView
 import android.widget.Toast
 import androidx.camera.core.*
-import androidx.camera.core.impl.ImageAnalysisConfig
 import androidx.camera.lifecycle.ProcessCameraProvider
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.cropsapp.databinding.ActivityCameraBinding
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import org.pytorch.IValue
-import org.pytorch.Module
-import org.pytorch.torchvision.TensorImageUtils
 import java.io.File
-import java.net.URI
 import java.util.*
 import java.util.concurrent.Executors
 
 class CameraActivity : AppCompatActivity() {
-    /*
-    setTargetResolution will make the aspect ratio 1:1 and take 640x640 if possible. We rescale the
-    bitmap to 640x640 in Preprocessing
-     */
+    /* setTargetResolution will make the aspect ratio 1:1 and take 640x640 if possible. We rescale the
+    bitmap to 640x640 in Preprocessing */
     private val imageAnalysis =
         ImageAnalysis.Builder().setTargetResolution(Size(640, 640)).build()
     private val imageCapture =
@@ -94,7 +75,7 @@ class CameraActivity : AppCompatActivity() {
         and start the camera */
         if (permissionsDenied && allPermissionsGranted()) {
             permissionsDenied = false
-            setContentView(R.layout.activity_camera)
+            setContentView(binding.root)
             startCamera()
         }
         //remove freeze
@@ -120,7 +101,7 @@ class CameraActivity : AppCompatActivity() {
             startCamera()
         } else {
             permissionsDenied = true
-            //alternative warning layout to ask for permissions
+            // alternative warning layout to ask for permissions
             setContentView(R.layout.activity_camera_alt)
             findViewById<Button>(R.id.button_permission_back).setOnClickListener {
                 onBackPressed()
@@ -142,7 +123,7 @@ class CameraActivity : AppCompatActivity() {
     }
 
     private fun startCamera() {
-        //go fullscreen
+        // go fullscreen
         supportActionBar?.hide()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             val windowInsetsController = window.insetsController
@@ -151,7 +132,7 @@ class CameraActivity : AppCompatActivity() {
             windowInsetsController?.hide(WindowInsets.Type.statusBars())
         }
 
-        //bind camera to lifecycle
+        // bind camera to lifecycle
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
         cameraProviderFuture.addListener({
             val cameraProvider = cameraProviderFuture.get()
@@ -170,18 +151,17 @@ class CameraActivity : AppCompatActivity() {
             )
         }, ContextCompat.getMainExecutor(this))
 
-        val takePictureButton = findViewById<FloatingActionButton>(R.id.button_take_picture)
-        takePictureButton.setOnClickListener { takePicture() }
+        binding.buttonTakePicture.setOnClickListener { takePicture() }
     }
 
     private fun freezePreview() {
-        //play white border animation
+        // play white border animation
         val animation = AnimationUtils.loadAnimation(this, R.anim.take_picture_border_fade)
         val borderView = findViewById<View>(R.id.take_picture_border)
         borderView.alpha = 1.0F
         borderView.startAnimation(animation)
 
-        //static image to replace previewView
+        // static image to replace previewView
         binding.cameraImageView.apply {
             setImageBitmap(binding.previewView.bitmap)
             visibility = View.VISIBLE
@@ -192,16 +172,19 @@ class CameraActivity : AppCompatActivity() {
         imageAnalysis.clearAnalyzer()
         freezePreview()
 
-        //data of the saved image
+        // data of the saved image
         val name = UUID.randomUUID().toString() + ".jpg"
 
-        val file = File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), name)
+        val file =
+            if (Environment.getExternalStorageState() == Environment.MEDIA_MOUNTED)
+                File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), name)
+            else File(filesDir, name)
         imageCapture.takePicture(
             ImageCapture.OutputFileOptions.Builder(file).build(),
             ContextCompat.getMainExecutor(this),
             object : ImageCapture.OnImageSavedCallback {
                 override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
-                    //start preview activity when the image is saved
+                    // start preview activity when the image is saved
                     val intent = Intent(applicationContext, PreviewActivity::class.java)
                     intent.putExtra("uri", outputFileResults.savedUri.toString())
                     startActivity(intent)
@@ -232,10 +215,6 @@ class CameraActivity : AppCompatActivity() {
 
     companion object {
         private const val REQUEST_CODE_PERMISSIONS = 1
-        private val REQUIRED_PERMISSIONS = mutableListOf(Manifest.permission.CAMERA).apply {
-            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
-                add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-            }
-        }.toTypedArray()
+        private val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.CAMERA)
     }
 }

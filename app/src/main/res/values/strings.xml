@@ -21,6 +21,8 @@
     <!-- Info Text -->
     <string name="text_camera_permission">To use this feature you need to grant the application the
         permission to use your camera.</string>
+    <string name="text_landing_page">Welcome to Sugar Beet Monitor! \n Tap the %icon% camera button
+        and take a picture of your sugar beet to begin analysis.</string>
 
     <!-- List Item -->
     <string name="list_item_status">Status:</string>

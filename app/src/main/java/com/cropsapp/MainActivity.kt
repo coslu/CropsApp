@@ -3,6 +3,10 @@ package com.cropsapp
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.*
+import android.text.Spannable
+import android.text.SpannableString
+import android.text.style.ImageSpan
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -28,16 +32,16 @@ class MainActivity : AppCompatActivity(), Notifiable {
         }
 
         kotlin.runCatching {
-            //If there were "awaiting" files left from last time, set them to "error"
+            // If there were "awaiting" files left from last time, set them to "error"
             File(filesDir, "awaitingFiles").forEachLine {
                 File(filesDir, it).writeText(MainAdapter.STATUS_ERROR.toString())
             }
         }
 
-        //If there were discarded images from last time that were not deleted, delete them now
+        // If there were discarded images from last time that were not deleted, delete them now
         deleteFiles()
 
-        //Get notified when the status of a file is changed
+        // Get notified when the status of a file is changed
         NetworkOperations.addNotifiable(this)
 
         mainAdapter = MainAdapter(getExternalFilesDir(Environment.DIRECTORY_PICTURES))
@@ -46,8 +50,17 @@ class MainActivity : AppCompatActivity(), Notifiable {
             addItemDecoration(DividerItemDecoration(context, LinearLayoutManager.VERTICAL))
         }
 
-        //instantiate preprocessing
+        // instantiate preprocessing
         Preprocessing(this)
+
+        // set landing page text
+        val landingText = getString(R.string.text_landing_page)
+        val iconIndex = landingText.indexOf("%icon")
+        val span = ImageSpan(this, R.drawable.ic_baseline_photo_camera_24)
+        SpannableString(landingText).let {
+            it.setSpan(span, iconIndex, iconIndex + 6, Spannable.SPAN_INCLUSIVE_INCLUSIVE)
+            binding.textLanding.text = it
+        }
     }
 
     override fun onNewIntent(intent: Intent?) {
@@ -55,14 +68,14 @@ class MainActivity : AppCompatActivity(), Notifiable {
 
         deleteFiles()
 
-        //if activity is launched from PreviewActivity by clicking the 'Save' button
+        // if activity is launched from PreviewActivity by clicking the 'Save' button
         intent?.getStringExtra("newFile")?.let {
             mainAdapter.addFile()
             binding.recyclerView.smoothScrollToPosition(0)
             addFile(it)
         }
 
-        //if activity is launched from DetailActivity by deleting the image
+        // if activity is launched from DetailActivity by deleting the image
         intent?.getStringExtra("deletedFile")?.let {
             mainAdapter.deleteFile(it.toInt())
         }
@@ -71,6 +84,8 @@ class MainActivity : AppCompatActivity(), Notifiable {
     override fun onResume() {
         super.onResume()
         deleteFiles()
+        binding.textLanding.visibility =
+            if (mainAdapter.itemCount == 0) View.VISIBLE else View.GONE
     }
 
     override fun onStop() {

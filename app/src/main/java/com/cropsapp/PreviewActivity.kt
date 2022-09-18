@@ -5,6 +5,7 @@ import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.cropsapp.databinding.ActivityPreviewBinding
 import java.io.File
 import java.net.URI
@@ -34,7 +35,10 @@ class PreviewActivity : AppCompatActivity() {
 
         filesToDelete.add(file.name)
 
-        Glide.with(this).load(uri).into(binding.previewImageView)
+        Glide.with(this).load(uri)
+            .diskCacheStrategy(DiskCacheStrategy.NONE)
+            .skipMemoryCache(true)
+            .into(binding.previewImageView)
         binding.buttonDiscard.setOnClickListener {
             finish()
         }

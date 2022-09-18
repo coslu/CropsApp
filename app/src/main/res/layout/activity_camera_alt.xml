@@ -19,7 +19,7 @@
             android:layout_height="wrap_content"
             android:text="@string/text_camera_permission"
             android:textAlignment="center"
-            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+            android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
             android:padding="20dp" />
 
         <Button
