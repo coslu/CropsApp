@@ -3,6 +3,9 @@ package com.cropsapp
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.io.BufferedInputStream
 import java.io.DataOutputStream
 import java.io.File
@@ -22,10 +25,12 @@ class NetworkOperations {
          * into the corresponding text file. Updates the list in MainActivity.
          * Given a DetailActivity, updates the status there as well.
          */
-        fun send(file: File, context: Context) {
+        @Suppress("BlockingMethodInNonBlockingContext")
+        fun send(file: File, context: Context) = CoroutineScope(Dispatchers.IO).launch {
             val textFile = file.getTextFile(context)
             textFile.writeText(MainAdapter.STATUS_AWAITING.toString())
             awaitingFiles.add(textFile.name)
+            saveAwaitingFiles(context)
 
             notifiables.forEach {
                 it.notifyStatusChanged()
@@ -62,6 +67,7 @@ class NetworkOperations {
                     it.notifyStatusChanged()
                 }
                 awaitingFiles.remove(textFile.name)
+                saveAwaitingFiles(context)
                 urlConnection.disconnect()
                 newFile.delete()
             }
@@ -70,9 +76,9 @@ class NetworkOperations {
         /**
          * Saves files that currently have status "Awaiting Response" into a file so that if they
          * remain that way when the app is closed, their status will be set to "Error"
-         * next time the app launches. We call this from onStop in every activity.
+         * next time the app launches.
          */
-        fun saveAwaitingFiles(context: Context) {
+        private fun saveAwaitingFiles(context: Context) {
             File(context.filesDir, "awaitingFiles").apply {
                 delete()
                 awaitingFiles.forEach {

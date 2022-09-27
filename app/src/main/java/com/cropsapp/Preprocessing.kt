@@ -99,6 +99,10 @@ class Preprocessing(context: Context) {
         val scores = module.forward(IValue.from(input)).toTuple()[0].toTensor()
         val boxes = nonMaxSuppression(scores.dataAsFloatArray)
         boxes.forEach {
+            it[0] = it[0].coerceIn(0f..640f)
+            it[1] = it[1].coerceIn(0f..640f)
+            it[2] = it[2].coerceIn(0f..640f)
+            it[3] = it[3].coerceIn(0f..640f)
             it.rotate(rotationDegrees)
             it.scaleBox(width.toFloat(), height.toFloat(), makeSquare)
         }

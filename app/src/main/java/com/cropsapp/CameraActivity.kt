@@ -5,7 +5,6 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Environment
 import android.provider.Settings
@@ -14,12 +13,12 @@ import android.view.*
 import android.view.animation.AnimationUtils
 import android.widget.Button
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.cropsapp.databinding.ActivityCameraBinding
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import java.io.File
 import java.util.*
 import java.util.concurrent.Executors
@@ -86,9 +85,8 @@ class CameraActivity : AppCompatActivity() {
     }
 
     override fun onStop() {
-        listener.disable()
-        NetworkOperations.saveAwaitingFiles(this)
         super.onStop()
+        listener.disable()
     }
 
     override fun onRequestPermissionsResult(

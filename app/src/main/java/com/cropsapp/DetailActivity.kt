@@ -1,20 +1,16 @@
 package com.cropsapp
 
 import android.content.Intent
-import android.net.Uri
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.net.toUri
 import com.bumptech.glide.Glide
 import com.cropsapp.databinding.ActivityDetailBinding
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import java.io.File
 import java.net.URI
 import java.text.DateFormat
@@ -48,15 +44,8 @@ class DetailActivity : AppCompatActivity(), Notifiable {
             .format(Date(file.lastModified()))
 
         binding.buttonRetryDetail.setOnClickListener {
-            CoroutineScope(Dispatchers.IO).launch {
-                NetworkOperations.send(file, this@DetailActivity)
-            }
+            NetworkOperations.send(file, this)
         }
-    }
-
-    override fun onStop() {
-        NetworkOperations.saveAwaitingFiles(this)
-        super.onStop()
     }
 
     override fun onDestroy() {

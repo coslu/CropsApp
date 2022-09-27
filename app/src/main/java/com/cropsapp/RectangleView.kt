@@ -10,7 +10,7 @@ import android.view.View
 import androidx.constraintlayout.widget.ConstraintLayout
 import kotlin.math.abs
 
-class RectangleView constructor(context: Context?, attributeSet: AttributeSet?) :
+class RectangleView(context: Context?, attributeSet: AttributeSet?) :
     View(context, attributeSet) {
 
     private val paint = Paint().apply {
@@ -31,7 +31,7 @@ class RectangleView constructor(context: Context?, attributeSet: AttributeSet?) 
      * Draws the given set of boxes onto the canvas
      */
     fun draw(boxes: Set<FloatArray>?) {
-        boxes?.apply {
+        boxes?.run {
             rectangles = map { box ->
                 RectF(box[0], box[1], box[2], box[3])
             }

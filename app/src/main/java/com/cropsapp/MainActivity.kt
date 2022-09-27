@@ -11,7 +11,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.cropsapp.databinding.ActivityMainBinding
-import kotlinx.coroutines.*
+import com.google.android.material.divider.MaterialDividerItemDecoration
 import java.io.File
 import java.net.URI
 
@@ -45,9 +45,9 @@ class MainActivity : AppCompatActivity(), Notifiable {
         NetworkOperations.addNotifiable(this)
 
         mainAdapter = MainAdapter(getExternalFilesDir(Environment.DIRECTORY_PICTURES))
-        binding.recyclerView.apply {
+        binding.recyclerView.run {
             adapter = mainAdapter
-            addItemDecoration(DividerItemDecoration(context, LinearLayoutManager.VERTICAL))
+            addItemDecoration(MaterialDividerItemDecoration(context, LinearLayoutManager.VERTICAL))
         }
 
         // instantiate preprocessing
@@ -66,13 +66,11 @@ class MainActivity : AppCompatActivity(), Notifiable {
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
 
-        deleteFiles()
-
         // if activity is launched from PreviewActivity by clicking the 'Save' button
         intent?.getStringExtra("newFile")?.let {
             mainAdapter.addFile()
             binding.recyclerView.smoothScrollToPosition(0)
-            addFile(it)
+            NetworkOperations.send(File(URI(it)), this)
         }
 
         // if activity is launched from DetailActivity by deleting the image
@@ -81,16 +79,15 @@ class MainActivity : AppCompatActivity(), Notifiable {
         }
     }
 
-    override fun onResume() {
-        super.onResume()
+    override fun onStart() {
+        super.onStart()
         deleteFiles()
-        binding.textLanding.visibility =
-            if (mainAdapter.itemCount == 0) View.VISIBLE else View.GONE
     }
 
-    override fun onStop() {
-        NetworkOperations.saveAwaitingFiles(this)
-        super.onStop()
+    override fun onResume() {
+        super.onResume()
+        binding.textLanding.visibility =
+            if (mainAdapter.itemCount == 0) View.VISIBLE else View.GONE
     }
 
     @SuppressLint("NotifyDataSetChanged")
@@ -98,18 +95,6 @@ class MainActivity : AppCompatActivity(), Notifiable {
         /* We need to notifyDataSetChanged because when this is called from NetworkOperations,
         there is no way to know the position of the item that is changed. */
         mainAdapter.notifyDataSetChanged()
-    }
-
-    /**
-     * Runs preprocessing on the new file that has arrived from PreviewActivity and sends it
-     * to the server
-     */
-    private fun addFile(uriString: String) {
-        val file = File(URI(uriString))
-
-        CoroutineScope(Dispatchers.IO).launch {
-            NetworkOperations.send(file, this@MainActivity)
-        }
     }
 
     /**
