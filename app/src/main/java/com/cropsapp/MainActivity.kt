@@ -34,7 +34,7 @@ class MainActivity : AppCompatActivity(), Notifiable {
         kotlin.runCatching {
             // If there were "awaiting" files left from last time, set them to "error"
             File(filesDir, "awaitingFiles").forEachLine {
-                File(filesDir, it).writeText(MainAdapter.STATUS_ERROR.toString())
+                File(filesDir, it).writeText(NetworkOperations.STATUS_ERROR.toString())
             }
         }
 

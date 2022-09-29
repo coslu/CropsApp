@@ -68,7 +68,7 @@ class DetailActivity : AppCompatActivity(), Notifiable {
 
     override fun notifyStatusChanged() = runOnUiThread {
         when (val result = textFile.readText().toDouble()) {
-            -1.0 -> {
+            NetworkOperations.STATUS_AWAITING -> {
                 binding.imageStatusDetail.setImageDrawable(
                     AppCompatResources
                         .getDrawable(this, R.drawable.ic_schedule_24)

@@ -69,13 +69,13 @@ class MainAdapter(private val picturesDirectory: File?) :
                     holder.textPrediction.text = getString(R.string.list_item_prediction, result)
                 holder.textStatus.text =
                     when (result) {
-                        STATUS_AWAITING -> getString(R.string.list_item_awaiting)
+                        NetworkOperations.STATUS_AWAITING -> getString(R.string.list_item_awaiting)
                         in 0.0..100.0 -> getString(R.string.list_item_complete)
                         else -> getString(R.string.list_item_error)
                     }
                 holder.imageStatus.setImageDrawable(
                     when (result) {
-                        STATUS_AWAITING -> AppCompatResources.getDrawable(
+                        NetworkOperations.STATUS_AWAITING -> AppCompatResources.getDrawable(
                             this,
                             R.drawable.ic_schedule_24
                         )
@@ -91,7 +91,7 @@ class MainAdapter(private val picturesDirectory: File?) :
                 )
             } catch (e: Exception) {
                 e.printStackTrace()
-                textFile.writeText(STATUS_ERROR.toString())
+                textFile.writeText(NetworkOperations.STATUS_ERROR.toString())
                 holder.textStatus.text = getString(R.string.list_item_error)
             }
         }
@@ -107,10 +107,5 @@ class MainAdapter(private val picturesDirectory: File?) :
 
     override fun getItemCount(): Int {
         return files.size
-    }
-
-    companion object {
-        const val STATUS_ERROR = -2.0
-        const val STATUS_AWAITING = -1.0
     }
 }
