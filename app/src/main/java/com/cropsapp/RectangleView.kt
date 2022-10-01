@@ -7,8 +7,6 @@ import android.graphics.Paint
 import android.graphics.RectF
 import android.util.AttributeSet
 import android.view.View
-import androidx.constraintlayout.widget.ConstraintLayout
-import kotlin.math.abs
 
 class RectangleView(context: Context?, attributeSet: AttributeSet?) :
     View(context, attributeSet) {

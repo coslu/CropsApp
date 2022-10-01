@@ -20,13 +20,11 @@ class DetailActivity : AppCompatActivity(), Notifiable {
     private lateinit var binding: ActivityDetailBinding
     private lateinit var file: File
     private lateinit var textFile: File
-    private var position: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         NetworkOperations.addNotifiable(this)
-        position = intent.getStringExtra("position")
 
         binding = ActivityDetailBinding.inflate(layoutInflater)
         setSupportActionBar(binding.topAppBar)
@@ -123,7 +121,7 @@ class DetailActivity : AppCompatActivity(), Notifiable {
     private fun delete() {
         File(filesDir, "filesToDelete.txt").writeText(file.name)
         Intent(this, MainActivity::class.java).apply {
-            putExtra("deletedFile", position)
+            putExtra("deletedFile", intent.getStringExtra("position"))
             startActivity(this)
         }
     }

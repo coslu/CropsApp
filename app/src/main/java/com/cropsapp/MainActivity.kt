@@ -8,7 +8,6 @@ import android.text.SpannableString
 import android.text.style.ImageSpan
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.cropsapp.databinding.ActivityMainBinding
 import com.google.android.material.divider.MaterialDividerItemDecoration
@@ -50,8 +49,8 @@ class MainActivity : AppCompatActivity(), Notifiable {
             addItemDecoration(MaterialDividerItemDecoration(context, LinearLayoutManager.VERTICAL))
         }
 
-        // instantiate preprocessing
-        Preprocessing(this)
+        // initialize preprocessing
+        Preprocessing.initialize(this)
 
         // set landing page text
         val landingText = getString(R.string.text_landing_page)

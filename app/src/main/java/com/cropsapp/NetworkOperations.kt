@@ -3,6 +3,7 @@ package com.cropsapp
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import androidx.exifinterface.media.ExifInterface
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -39,7 +40,9 @@ object NetworkOperations {
             it.notifyStatusChanged()
         }
 
-        val processedBitmap = Preprocessing.instance.crop(BitmapFactory.decodeFile(file.path))
+        val rotation = ExifInterface(file).rotationDegrees.toFloat()
+        val processedBitmap =
+            Preprocessing.crop(BitmapFactory.decodeFile(file.path).rotate(rotation))
         val newFile = File(context.filesDir, file.name)
         processedBitmap.compress(Bitmap.CompressFormat.JPEG, 100, newFile.outputStream())
 

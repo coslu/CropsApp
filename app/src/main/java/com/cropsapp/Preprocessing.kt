@@ -11,14 +11,15 @@ import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.pow
 
-class Preprocessing(context: Context) {
-    private val modelFile = File(context.filesDir, "scripted_best.pt")
-    private val module: Module
+object Preprocessing {
+    private const val CONFIDENCE_THRESHOLD = 0.25
+    private const val IOU_THRESHOLD = 0.45
+    private lateinit var module: Module
 
-    init {
-        instance = this
+    fun initialize(context: Context) {
+        val modelFile = File(context.filesDir, "scripted_best.pt")
         if (!modelFile.exists() || modelFile.length() == 0L) {
-            val inputStream = context.assets.open("scripted_best.pt") //throws IO
+            val inputStream = context.assets.open("scripted_best.pt")
             val outputStream = modelFile.outputStream()
             inputStream.copyTo(outputStream)
         }
@@ -239,11 +240,5 @@ class Preprocessing(context: Context) {
         this[1] = (box[1] + box[3]) / 2
         this[2] -= box[0]
         this[3] -= box[1]
-    }
-
-    companion object {
-        private const val CONFIDENCE_THRESHOLD = 0.25
-        private const val IOU_THRESHOLD = 0.45
-        lateinit var instance: Preprocessing
     }
 }

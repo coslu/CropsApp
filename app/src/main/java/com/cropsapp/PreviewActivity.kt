@@ -11,30 +11,25 @@ import java.io.File
 import java.net.URI
 
 class PreviewActivity : AppCompatActivity() {
-    private lateinit var uri: Uri
-    private lateinit var file: File
-    private lateinit var binding: ActivityPreviewBinding
-    private lateinit var deletionFile: File
-    private var filesToDelete = mutableSetOf<String>()
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityPreviewBinding.inflate(layoutInflater)
+        val binding = ActivityPreviewBinding.inflate(layoutInflater)
         setContentView(binding.root)
         setSupportActionBar(binding.topAppBar)
         supportActionBar?.title = getString(R.string.title_preview)
 
-        deletionFile = File(filesDir, "filesToDelete.txt")
+        val deletionFile = File(filesDir, "filesToDelete.txt")
+        val filesToDelete = mutableSetOf<String>()
         kotlin.runCatching {
-            filesToDelete = deletionFile.readLines().toMutableSet()
+            filesToDelete.addAll(deletionFile.readLines())
         }
 
         //set image from the saved file uri
-        uri = Uri.parse(intent.getStringExtra("uri"))
-        file = File(URI(uri.toString()))
+        val uri = Uri.parse(intent.getStringExtra("uri"))
+        val file = File(URI(uri.toString()))
 
         filesToDelete.add(file.name)
-        saveFilesToDelete()
+        saveFilesToDelete(deletionFile, filesToDelete)
 
         Glide.with(this).load(uri)
             .diskCacheStrategy(DiskCacheStrategy.NONE)
@@ -45,7 +40,7 @@ class PreviewActivity : AppCompatActivity() {
         }
         binding.buttonSave.setOnClickListener {
             filesToDelete.remove(file.name)
-            saveFilesToDelete()
+            saveFilesToDelete(deletionFile, filesToDelete)
             Intent(this, MainActivity::class.java).apply {
                 putExtra("newFile", uri.toString())
                 startActivity(this)
@@ -53,7 +48,7 @@ class PreviewActivity : AppCompatActivity() {
         }
     }
 
-    private fun saveFilesToDelete() {
+    private fun saveFilesToDelete(deletionFile: File, filesToDelete: Set<String>) {
         deletionFile.delete()
         filesToDelete.forEach {
             deletionFile.appendText("$it\n")

@@ -199,7 +199,7 @@ class CameraActivity : AppCompatActivity() {
         val rotationDegrees = imageProxy.imageInfo.rotationDegrees.toFloat()
         val bitmap = imageProxy.image?.toBitmap()?.rotate(rotationDegrees)
         val boxes = bitmap?.let {
-            Preprocessing.instance.detect(
+            Preprocessing.detect(
                 it,
                 binding.previewView.width,
                 binding.previewView.height,
