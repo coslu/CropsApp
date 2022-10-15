@@ -1,4 +1,4 @@
-package com.cropsapp
+package de.tum.sugarbeetmonitor
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -17,7 +17,6 @@ object NetworkOperations {
     const val STATUS_AWAITING = -1.0
     const val STATUS_ERROR = -2.0
     private const val SERVER_URL = "https://sugarbeet-gbtudlapea-ew.a.run.app"
-    private const val LOCAL_URL = "http://192.168.0.2:5000" //TODO remove
     private const val CONNECTION_TIMEOUT = 15000
     private val awaitingFiles = mutableListOf<String>()
     private val notifiables = mutableListOf<Notifiable>()
@@ -46,7 +45,7 @@ object NetworkOperations {
         val newFile = File(context.filesDir, file.name)
         processedBitmap.compress(Bitmap.CompressFormat.JPEG, 100, newFile.outputStream())
 
-        val url = URL("${SERVER_URL}/predict")
+        val url = URL("$SERVER_URL/predict")
         val urlConnection = (url.openConnection() as HttpURLConnection).apply {
             doOutput = true
             addRequestProperty("Content-Type", "multipart/form-data;boundary=*****")

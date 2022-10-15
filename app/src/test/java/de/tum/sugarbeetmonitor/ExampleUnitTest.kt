@@ -1,4 +1,4 @@
-package com.cropsapp
+package de.tum.sugarbeetmonitor
 
 import org.junit.Test
 

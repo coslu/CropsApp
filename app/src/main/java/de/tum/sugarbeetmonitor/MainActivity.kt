@@ -1,4 +1,4 @@
-package com.cropsapp
+package de.tum.sugarbeetmonitor
 
 import android.annotation.SuppressLint
 import android.content.Intent
@@ -9,8 +9,8 @@ import android.text.style.ImageSpan
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.cropsapp.databinding.ActivityMainBinding
 import com.google.android.material.divider.MaterialDividerItemDecoration
+import de.tum.sugarbeetmonitor.databinding.ActivityMainBinding
 import java.io.File
 import java.net.URI
 

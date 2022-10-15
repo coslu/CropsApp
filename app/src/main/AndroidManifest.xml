@@ -15,7 +15,7 @@
         android:theme="@style/Theme.CropsApp">
         <activity
             android:name=".DetailActivity"
-            android:parentActivityName=".MainActivity"
+            android:parentActivityName="de.tum.sugarbeetmonitor.MainActivity"
             android:exported="false" />
         <activity
             android:name=".PreviewActivity"

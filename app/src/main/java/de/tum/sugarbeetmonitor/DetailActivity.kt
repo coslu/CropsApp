@@ -1,4 +1,4 @@
-package com.cropsapp
+package de.tum.sugarbeetmonitor
 
 import android.content.Intent
 import android.os.Bundle
@@ -9,8 +9,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.net.toUri
 import com.bumptech.glide.Glide
-import com.cropsapp.databinding.ActivityDetailBinding
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import de.tum.sugarbeetmonitor.databinding.ActivityDetailBinding
 import java.io.File
 import java.net.URI
 import java.text.DateFormat

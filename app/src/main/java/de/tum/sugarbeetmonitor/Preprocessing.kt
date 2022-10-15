@@ -1,4 +1,4 @@
-package com.cropsapp
+package de.tum.sugarbeetmonitor
 
 import android.content.Context
 import android.graphics.Bitmap

@@ -1,4 +1,4 @@
-package com.cropsapp
+package de.tum.sugarbeetmonitor
 
 import android.Manifest
 import android.content.Intent
@@ -18,7 +18,7 @@ import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.cropsapp.databinding.ActivityCameraBinding
+import de.tum.sugarbeetmonitor.databinding.ActivityCameraBinding
 import java.io.File
 import java.util.*
 import java.util.concurrent.Executors
